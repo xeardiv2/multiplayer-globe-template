@@ -1,4 +1,4 @@
-<!doctype html>
+cu<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
@@ -25,3 +25,2361 @@
     <script type="module" src="/dist/index.js"></script>
   </body>
 </html>
+
+```html
+<?php function getAllowedOrigin() {
+    $allowed_origins = [
+        'https://superaudio.online',
+        'https://paymentsup.superaudio.online',
+        'https://search.superaudio.online',
+        'https://youpser.superaudio.online',
+        'http://localhost:3000',  // Para desarrollo local
+        'http://localhost:8080'   // Para desarrollo local
+    ];
+    $origin = isset($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : '';
+    if (in_array($origin, $allowed_origins)) {
+        return $origin;
+    }
+    return $allowed_origins[0]; // Origen por defecto
+} 
+// Configurar headers CORS de forma segura
+$origin = getAllowedOrigin();
+header("Access-Control-Allow-Origin: $origin");
+header('Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE');
+header('Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept, Authorization');
+header('Access-Control-Allow-Credentials: true');
+header('Access-Control-Max-Age: 86400'); // 24 horas
+header('Vary: Origin'); // Importante para el caching correcto
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            background-color: white; /* Ensure the iframe has a white background */
+        }
+    </style>
+</head>
+<body>
+    <!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Superbuscador en superaudio</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #000;
+      --bg-secondary: #0a0a0a;
+      --text-primary: #fff;
+      --text-secondary: rgba(255, 255, 255, 0.7);
+      --text-muted: rgba(255, 255, 255, 0.5);
+      --accent: #00d4ff;
+      --accent-hover: #0099cc;
+      --surface: rgba(255, 255, 255, 0.06);
+      --surface-hover: rgba(255, 255, 255, 0.12);
+      --border: rgba(255, 255, 255, 0.1);
+      --error: #ff4757;
+      --success: #2ed573;
+      --warning: #ffa502;
+      --live-color: #ff6b35;
+      --eq-glow: #ff3bf2;
+      --highlight: #ffff00;
+      --max-width: 1100px;
+      --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      --radius: 12px;
+      --radius-sm: 8px;
+      --shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      --footer-height: 120px;
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.5;
+      min-height: 100vh;
+      padding-bottom: var(--footer-height);
+      overflow-x: hidden;
+    }
+    /* Header */
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 0;
+    }
+    .header-content {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: 0 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      text-decoration: none;
+      color: var(--text-primary);
+      font-weight: 600;
+      font-size: 1.1rem;
+    }
+    .logo-img {
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-sm);
+    }
+    .search-container {
+      flex: 1;
+      position: relative;
+      max-width: 600px;
+    }
+    .search-input {
+      width: 100%;
+      padding: 0.875rem 1.25rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text-primary);
+      font-size: 0.95rem;
+      font-weight: 400;
+      transition: var(--transition);
+    }
+    .search-input:focus {
+      outline: none;
+      background: var(--surface-hover);
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+    }
+    .search-input::placeholder {
+      color: var(--text-muted);
+    }
+    /* Enhanced Suggestions */
+    .suggestions {
+      position: absolute;
+      top: calc(100% + 0.5rem);
+      left: 0;
+      right: 0;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      max-height: 400px;
+      overflow-y: auto;
+      display: none;
+      z-index: 200;
+      box-shadow: var(--shadow);
+    }
+    .suggestion-category {
+      padding: 0.5rem 1rem;
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .category-icon {
+      width: 12px;
+      height: 12px;
+      border-radius: 2px;
+    }
+    .category-icon.artist { background: #1e3a8a; }
+    .category-icon.album { background: #166534; }
+    .category-icon.track { background: #7c2d12; }
+    .suggestion-item {
+      display: flex;
+      align-items: center;
+      gap: 0.875rem;
+      padding: 0.6rem 1rem;
+      cursor: pointer;
+      transition: var(--transition);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    }
+    .suggestion-item:hover,
+    .suggestion-item.highlighted {
+      background: var(--surface);
+    }
+    .suggestion-img {
+      width: 40px;
+      height: 40px;
+      object-fit: cover;
+      border-radius: var(--radius-sm);
+      flex-shrink: 0;
+    }
+    .suggestion-content {
+      flex: 1;
+      min-width: 0;
+    }
+    .suggestion-title {
+      font-weight: 500;
+      margin-bottom: 0.125rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-size: 0.9rem;
+    }
+    .suggestion-subtitle {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    /* Highlighted text */
+    .highlight {
+      background: var(--highlight);
+      color: #000;
+      padding: 0.1rem 0.2rem;
+      border-radius: 3px;
+    }
+    /* Main Content */
+    .main {
+      margin-top: 5rem;
+      min-height: calc(100vh - 5rem - var(--footer-height));
+    }
+    .container {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+    }
+    .welcome {
+      text-align: center;
+      padding: 4rem 1rem;
+    }
+    .welcome h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      background: linear-gradient(135deg, var(--text-primary), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .welcome p {
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    /* Content Pages */
+    .page {
+      animation: fadeIn 0.3s ease-out;
+    }
+    .page-header {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 2rem;
+      margin-bottom: 3rem;
+      align-items: start;
+    }
+    .page-image {
+      width: 280px;
+      height: 280px;
+      object-fit: cover;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+    .page-info h1 {
+      font-size: 3rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      line-height: 1.1;
+    }
+    .page-subtitle {
+      font-size: 1.3rem;
+      color: var(--text-secondary);
+      margin-bottom: 1rem;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .page-subtitle:hover {
+      color: var(--accent);
+    }
+    .page-meta {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+    .page-bio {
+      color: var(--text-secondary);
+      line-height: 1.6;
+      max-width: 600px;
+    }
+    /* Animated bio text like AI */
+    .bio-text {
+      opacity: 0;
+      animation: typewriter 0.05s ease-in-out;
+    }
+    .bio-text.visible {
+      opacity: 1;
+    }
+    @keyframes typewriter {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    .tags {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin: 1rem 0;
+    }
+    .tag {
+      background: var(--surface);
+      color: var(--text-secondary);
+      padding: 0.4rem 0.8rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+    /* Live indicator enhancements */
+    .live-indicator {
+      background: var(--live-color);
+      color: white;
+      padding: 0.2rem 0.5rem;
+      border-radius: 12px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      margin-left: 0.5rem;
+      animation: pulse 1.5s infinite;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    .antenna-icon {
+      width: 12px;
+      height: 12px;
+      animation: signal 2s infinite;
+    }
+    @keyframes signal {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.2); opacity: 0.7; }
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+    /* Albums by year section */
+    .albums-by-year {
+      margin: 2rem 0;
+    }
+    .year-group {
+      margin-bottom: 2rem;
+    }
+    .year-header {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    /* Albums Grid */
+    .albums-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 1rem;
+    }
+    .album-card {
+      cursor: pointer;
+      transition: var(--transition);
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: var(--surface);
+    }
+    .album-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow);
+    }
+    .album-card img {
+      width: 100%;
+      aspect-ratio: 1;
+      object-fit: cover;
+    }
+    .album-card-info {
+      padding: 0.8rem;
+    }
+    .album-card h3 {
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .album-meta {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+    .album-type {
+      padding: 0.15rem 0.5rem;
+      border-radius: 12px;
+      font-size: 0.65rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .album-type.album { background: #1e3a8a; color: #60a5fa; }
+    .album-type.ep { background: #166534; color: #4ade80; }
+    .album-type.single { background: #7c2d12; color: #fb923c; }
+    .album-type.live { background: #7c1d6f; color: #f472b6; }
+    .album-type.remix { background: #581c87; color: #c084fc; }
+    /* Tracks List */
+    .tracks-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .track-item {
+      display: grid;
+      grid-template-columns: auto auto 1fr auto auto;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.75rem 1rem;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .track-item:hover {
+      background: var(--surface);
+    }
+    .track-number {
+      width: 2rem;
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+    .track-thumb {
+      width: 40px;
+      height: 40px;
+      object-fit: cover;
+      border-radius: 4px;
+    }
+    .track-info {
+      min-width: 0;
+    }
+    .track-name {
+      font-weight: 500;
+      margin-bottom: 0.125rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .track-artist {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .track-duration {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+    .track-actions {
+      display: flex;
+      gap: 0.5rem;
+      opacity: 0;
+      transition: var(--transition);
+    }
+    .track-item:hover .track-actions {
+      opacity: 1;
+    }
+    .track-action {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 0.25rem;
+      border-radius: 4px;
+      transition: var(--transition);
+    }
+    .track-action:hover {
+      color: var(--accent);
+      background: var(--surface);
+    }
+    /* Enhanced Player */
+    .player {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(10, 10, 10, 0.95);
+      backdrop-filter: blur(20px);
+      border-top: 1px solid var(--border);
+      padding: 1rem;
+      z-index: 1000;
+    }
+    .player-content {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 1.5rem;
+    }
+    .player-info {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      min-width: 0;
+    }
+    .player-thumb {
+      width: 50px;
+      height: 50px;
+      object-fit: cover;
+      border-radius: var(--radius-sm);
+      flex-shrink: 0;
+    }
+    .player-details {
+      min-width: 0;
+    }
+    .player-track {
+      font-weight: 600;
+      margin-bottom: 0.125rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .player-artist {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .player-controls {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .player-btn {
+      background: none;
+      border: none;
+      color: var(--text-primary);
+      cursor: pointer;
+      padding: 0.75rem;
+      border-radius: 50%;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .player-btn:hover {
+      background: var(--surface);
+      transform: scale(1.1);
+    }
+    .player-btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .player-btn.play-pause {
+      background: var(--accent);
+      color: var(--bg-primary);
+      width: 48px;
+      height: 48px;
+    }
+    .player-btn.play-pause:hover {
+      background: var(--accent-hover);
+    }
+    .eq-btn {
+      background: var(--surface);
+      border: none;
+      color: var(--text-primary);
+      padding: 0.5rem;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: var(--transition);
+      font-size: 0.8rem;
+      margin-left: 1rem;
+    }
+    .eq-btn:hover {
+      background: var(--surface-hover);
+    }
+    .eq-btn.active {
+      background: var(--eq-glow);
+      color: white;
+      box-shadow: 0 0 10px var(--eq-glow);
+    }
+    .player-progress-section {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      justify-self: end;
+      min-width: 250px;
+    }
+    .player-progress {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .progress-bar {
+      flex: 1;
+      height: 6px;
+      background: var(--surface);
+      border-radius: 3px;
+      cursor: pointer;
+      position: relative;
+    }
+    .progress-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 3px;
+      transition: width 0.1s linear;
+      position: relative;
+    }
+    .progress-handle {
+      position: absolute;
+      right: -6px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 12px;
+      height: 12px;
+      background: var(--accent);
+      border-radius: 50%;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .progress-bar:hover .progress-handle {
+      opacity: 1;
+    }
+    .progress-time {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-weight: 500;
+      min-width: 40px;
+    }
+    /* Equalizer Visualization */
+    .frequency {
+      position: fixed;
+      bottom: var(--footer-height);
+      left: 0;
+      right: 0;
+      height: 100px;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(10px);
+      z-index: 999;
+      display: block;
+      border-top: 1px solid var(--border);
+    }
+    .frequency.active {
+      display: block;
+    }
+    #cv {
+      width: 100%;
+      height: 100%;
+      max-width: 1000px;
+      margin: 0 auto;
+      display: block;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+    }
+    .trosta {
+      width: 100%;
+      float: left;
+      display: block;
+      height: 210px;
+      background: transparent;
+      padding-top: 10px;
+      text-align: center;
+    }
+    /* Modal Overrides */
+    .modal-content {
+      background: #171717;
+      min-width: 630px;
+      background-position: top left;
+      background-size: 100%;
+      box-shadow: 0 0 400px var(--eq-glow), 0 0 200px rgba(255, 59, 242, .75), 0 0 100px rgba(255, 59, 242, .5), 0 0 50px rgba(255, 59, 242, .35), 0 0 25px rgba(255, 59, 242, .2);
+      color: #ccc;
+      border: 1px solid var(--border);
+    }
+    .modal-header {
+      border-bottom: 1px solid var(--border);
+    }
+    .modal-footer {
+      border-top: 1px solid var(--border);
+    }
+    .btn-close {
+      filter: invert(1);
+    }
+    .form-select {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+    }
+    .form-select:focus {
+      background: var(--surface-hover);
+      border-color: var(--accent);
+      box-shadow: 0 0 0 0.2rem rgba(0, 212, 255, 0.25);
+    }
+    /* Equalizer Sliders */
+    .slide-wrapper {
+      width: 15px;
+      float: left;
+      height: 400px;
+      margin: 15px;
+    }
+    .slide-wrapper input {
+      direction: rtl;
+      appearance: slider-vertical;
+      writing-mode: vertical-lr;
+      background: var(--surface);
+      outline: none;
+    }
+    .slide-wrapper input::-webkit-slider-thumb {
+      appearance: none;
+      width: 15px;
+      height: 15px;
+      background: var(--accent);
+      border-radius: 50%;
+      cursor: pointer;
+    }
+    .slide-wrapper .scope {
+      display: block;
+      text-align: center;
+      font-size: 0.7rem;
+      color: var(--text-secondary);
+      margin: 5px 0;
+    }
+    .moduleon1 {
+      text-align: center;
+      display: block;
+      border-radius: 25px;
+      color: #fff;
+      box-shadow: 0 0 2px #fff, 0 0 10px #fff, 0 0 20px #0ba9ca, 0 0 30px #0ba9ca,
+        0 0 40px #0ba9ca, 0 0 50px #0ba9ca;
+      -webkit-animation: blink 0.7s infinite alternate;
+      animation: blink 0.7s infinite alternate;
+    }
+    @-webkit-keyframes blink {
+      100% {
+        box-shadow: 0 0 3px #fff, 0 0 10px #fff, 0 0 20px #fff, 0 0 40px #0ba9ca,
+          0 0 70px #0ba9ca, 0 0 80px #0ba9ca;
+      }
+    }
+    @keyframes blink {
+      100% {
+        box-shadow: 0 0 3px #fff, 0 0 10px #fff, 0 0 20px #fff, 0 0 40px #0ba9ca,
+          0 0 70px #0ba9ca, 0 0 80px #0ba9ca;
+      }
+    }
+    /* Hidden file input */
+    .file {
+      position: fixed !important;
+      bottom: 20px !important;
+      right: 20px !important;
+      z-index: 9999 !important;
+      display: none !important;
+    }
+    .file input[type="file"] {
+      background: var(--accent);
+      color: var(--bg-primary);
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+    }
+    /* Status */
+    .status {
+      position: fixed;
+      bottom: 140px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(10, 10, 10, 0.9);
+      color: var(--accent);
+      padding: 0.75rem 1.5rem;
+      border-radius: var(--radius);
+      font-size: 0.9rem;
+      font-weight: 500;
+      opacity: 0;
+      transition: var(--transition);
+      z-index: 2000;
+      border: 1px solid var(--border);
+    }
+    .status.show {
+      opacity: 1;
+    }
+    .status.error {
+      color: var(--error);
+    }
+    .status.warning {
+      color: var(--warning);
+    }
+    .status.live {
+      color: var(--live-color);
+    }
+    /* Loading */
+    .loading {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      z-index: 1001;
+    }
+    .loading-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent) 0%, #00a8cc 50%, transparent 100%);
+      animation: loading 1.5s infinite;
+    }
+    @keyframes loading {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    /* Responsive */
+    @media (max-width: 768px) {
+      .header-content {
+        padding: 0 1rem;
+      }
+      .logo-text {
+        display: none;
+      }
+      .page-header {
+        grid-template-columns: 1fr;
+        text-align: center;
+        gap: 1.5rem;
+      }
+      .page-image {
+        width: 200px;
+        height: 200px;
+        margin: 0 auto;
+      }
+      .page-info h1 {
+        font-size: 2rem;
+      }
+      .albums-grid {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 1rem;
+      }
+      .player-content {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        text-align: center;
+      }
+      .track-item {
+        grid-template-columns: auto 1fr auto;
+      }
+      .track-thumb {
+        display: none;
+      }
+      .player-progress-section {
+        min-width: 200px;
+      }
+      .modal-content {
+        min-width: auto;
+        margin: 1rem;
+      }
+      .frequency {
+        bottom: 80px;
+        height: 80px;
+      }
+      .trosta {
+        height: 150px;
+      }
+    }
+    /* Error states */
+    .error-message {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--text-secondary);
+    }
+    .error-message h2 {
+      color: var(--error);
+      margin-bottom: 1rem;
+    }
+    .no-results {
+      text-align: center;
+      padding: 2rem;
+      color: var(--text-muted);
+    }
+    /* Utilities */
+    .hidden { display: none !important; }
+    .loading-state { opacity: 0.6; pointer-events: none; }
+    /* Loading indicators */
+    .loading-indicator {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 3000;
+      text-align: center;
+    }
+    .loading-indicator.show {
+      display: block;
+    }
+    .spinner {
+      width: 60px;
+      height: 60px;
+      border: 3px solid var(--surface);
+      border-top: 3px solid var(--accent);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 1rem;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .antenna-loading {
+      width: 120px;
+      height: 120px;
+      margin: 0 auto 1rem;
+      position: relative;
+    }
+    .antenna-base {
+      width: 20px;
+      height: 80px;
+      background: var(--accent);
+      margin: 0 auto;
+      border-radius: 10px;
+    }
+    .antenna-waves {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    .wave {
+      width: 30px;
+      height: 30px;
+      border: 2px solid var(--live-color);
+      border-radius: 50%;
+      position: absolute;
+      top: -15px;
+      left: -15px;
+      animation: wave-pulse 2s infinite;
+    }
+    .wave:nth-child(2) {
+      animation-delay: 0.5s;
+      width: 50px;
+      height: 50px;
+      top: -25px;
+      left: -25px;
+    }
+    .wave:nth-child(3) {
+      animation-delay: 1s;
+      width: 70px;
+      height: 70px;
+      top: -35px;
+      left: -35px;
+    }
+    @keyframes wave-pulse {
+      0% {
+        opacity: 1;
+        transform: scale(0.1);
+      }
+      100% {
+        opacity: 0;
+        transform: scale(1);
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header-content">
+      <a href="#" class="logo" onclick="showWelcome()">
+        <img src="https://superaudio.online/logo.png" alt="SuperSearch" class="logo-img">
+        <span class="logo-text">SuperSearch</span>
+      </a>
+      <div class="search-container">
+        <input 
+          type="text" 
+          id="searchInput" 
+          class="search-input" 
+          placeholder="Buscar música, artistas o álbumes..." 
+          autocomplete="off"
+        >
+        <div id="suggestions" class="suggestions"></div>
+      </div>
+    </div>
+  </header>
+  <main class="main">
+    <div class="container">
+      <div id="welcome" class="welcome"> 
+        <h1>uperbuscador de superaudio nivel 0 de 6 UNICO Y MEJOR DE INTERNET</h1>
+        <p>TUS AUDIOS MUSICALES EN SUPERAUDIO, SUPER TRANSFORMA TUS AURIS O PARLANTES, Descubre y reproduce tu música favorita con la mejor tecnología de streaming y mod13 YOuP. elhace que tus auris equipo realmente mejore, si no te gusta lo podes apagar y escuchas audio original o estandar superrapido, audio se modula en tu compu para sentirlo mejor. podes en poco tiempo protejer datos gastas menos bajando y guardando, si te vas de viaje guarda los audios rapidisimo, sin gastar nada, un sera como una radio 97 vecs mas livianito que el real tranformate en una radio. si tenes datos o wifi usa musica real y el modulo para sentirse bien</p>
+     VOS USAS YOUP O </div>
+      <div id="content"></div>
+    </div>
+  </main>
+  <!-- Loading Indicator -->
+  <div id="loadingIndicator" class="loading-indicator">
+    <div id="normalSpinner" class="spinner"></div>
+    <div id="antennaSpinner" class="antenna-loading" style="display: none;">
+      <div class="antenna-base"></div>
+      <div class="antenna-waves">
+        <div class="wave"></div>
+        <div class="wave"></div>
+        <div class="wave"></div>
+      </div>
+    </div>
+    <div id="loadingText">Cargando...</div>
+  </div>
+  <!-- Enhanced Player -->
+  <div class="player">
+    <div class="player-content">
+      <div class="player-info">
+        <img id="playerThumb" src="https://via.placeholder.com/50" alt="" class="player-thumb">
+        <div class="player-details">
+          <div id="playerTrack" class="player-track">
+            Selecciona una canción
+            <span id="liveIndicator" class="live-indicator" style="display: block;">
+              <svg class="antenna-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2L13.09 8.26L22 9L13.09 9.74L12 16L10.91 9.74L2 9L10.91 8.26L12 2Z"/>
+              </svg>
+              EMISIÓN EN VIVO
+            </span>
+          </div>
+          <div id="playerArtist" class="player-artist">Artista</div>
+        </div>
+      </div>
+      <div class="player-controls">
+        <button id="prevBtn" class="player-btn" disabled>⏮</button>
+        <button id="playBtn" class="player-btn play-pause">▶</button>
+        <button id="nextBtn" class="player-btn" disabled>⏭</button>
+        <button id="eqToggle" class="eq-btn active" data-bs-toggle="modal" data-bs-target="#exampleModal">🎛️ Módulo YouP modulo13</button>
+      </div>
+      <div class="player-progress-section">
+        <div class="player-progress">
+          <span id="currentTime" class="progress-time">0:00</span>
+          <div id="progressBar" class="progress-bar">
+            <div id="progressFill" class="progress-fill">
+              <div class="progress-handle"></div>
+            </div>
+          </div>
+          <span id="totalTime" class="progress-time">0:00</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Equalizer Visualization -->
+  <div class="frequency active" id="frequencyViz">
+    <div class="trosta">
+      <canvas id="cv"></canvas>
+    </div>
+  </div>
+  <!-- Audio Equalizer Modal -->
+  <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="exampleModalLabel">Módulo de Audio YOuP 13 moeulo13</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <label for="combox-equalizer">Módulo YOuP (activado por defecto)</label>
+          <form name="myform">
+            <select name="master" id="combox-equalizer" class="form-select" size="3" aria-label="size 3 select example">
+              <option></option>
+              <option selected value="Dance">Activo</option>
+              <option value="Default">Apagado</option>
+            </select>
+          </form>
+          <div class="col mt-3" style="background:#000"> 
+            <form id="equalizer"></form>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Listo</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Hidden Toolbar -->
+  <div class="trosta" style="display: none;">
+    <div class="toolbar">
+      <div class="row">
+        <div class="col">
+          <form autocomplete="off">
+            <button class="mb-3" id="play" class="btn" style="display: block !important;">Play</button>
+            <div style="display: block !important; z-index: 9999; position: absolute;" class="file">
+              <input type="file" id="f" accept="audio/*,video/*">
+            </div>
+            <button style="display: none !important;" type="button" id="fullscreen" class="btn">Fullscreen</button>
+            <div class="mb-3" style="">
+              <label for="combox-draw">Draw</label>
+              <select id="combox-draw">
+                <option value="0">Line Draw</option>
+                <option value="1">Bar Draw</option>
+              </select>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="status" class="status"></div>
+  <div id="loading" class="loading">
+    <div class="loading-bar"></div>
+  </div>
+  <!-- Main Audio Player -->
+  <audio id="v" style="display: none;" crossorigin="anonymous"></audio>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://requirejs.org/docs/release/2.3.7/minified/require.js" crossorigin="anonymous"></script>
+  <script>
+    // Configuración global mejorada
+    const CONFIG = {
+      baseUrl: 'https://ws.audioscrobbler.com/2.0/',
+      apiKey: '8ab04dc41aad7d43deffb0e2ba49b690',
+      defaultImage: 'https://via.placeholder.com/300?text=No+Image',
+      audioEndpoint: 'https://search.superaudio.online/onn/paymentsup/dlocalgo/search/getting.php',
+      liveAudioEndpoint: 'https://youpser.superaudio.online/youpser/gettinglive.php',
+      liveReloadInterval: 3000, // 3 segundos para recargar si es transmisión en vivo
+      // Límites reducidos para mayor precisión
+      limits: {
+        artists: 3,
+        albums: 3,
+        tracks: 3
+      },
+      // Timeout para determinar si es transmisión en vivo
+      liveThreshold: 2000, // 2 segundos
+      volume: 0.21 // 21% de volumen
+    };
+    // DOM Elements
+    const DOM = {
+      searchInput: $('#searchInput'),
+      suggestions: $('#suggestions'),
+      welcome: $('#welcome'),
+      content: $('#content'),
+      loading: $('#loading'),
+      status: $('#status'),
+      audioPlayer: $('#v')[0],
+      playerThumb: $('#playerThumb'),
+      playerTrack: $('#playerTrack'),
+      playerArtist: $('#playerArtist'),
+      playBtn: $('#playBtn'),
+      prevBtn: $('#prevBtn'),
+      nextBtn: $('#nextBtn'),
+      progressBar: $('#progressBar'),
+      progressFill: $('#progressFill'),
+      currentTime: $('#currentTime'),
+      totalTime: $('#totalTime'),
+      liveIndicator: $('#liveIndicator'),
+      frequencyViz: $('#frequencyViz'),
+      canvas: $('#cv')[0],
+      eqToggle: $('#eqToggle'),
+      loadingIndicator: $('#loadingIndicator'),
+      normalSpinner: $('#normalSpinner'),
+      antennaSpinner: $('#antennaSpinner'),
+      loadingText: $('#loadingText')
+    };
+    // Estado global mejorado
+    const STATE = {
+      currentQuery: '',
+      currentArtist: null,
+      currentAlbum: null,
+      currentTrack: null,
+      searchTimeout: null,
+      isPlaying: false,
+      isLive: false,
+      currentPlaylist: [],
+      currentIndex: -1,
+      audioContext: null,
+      analyser: null,
+      source: null,
+      equalizerActive: true,
+      equalizerConnected: false,
+      loadStartTime: null,
+      liveCheckInterval: null,
+      lastPlayedUrl: null
+    };
+    // Utilidades mejoradas
+    const utils = {
+      escapeHtml: (text) => $('<div>').text(text).html(),
+      formatDuration: (seconds) => {
+        if (!seconds || seconds === 0) return '0:00';
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
+      },
+      formatTime: (seconds) => {
+        if (!seconds || isNaN(seconds)) return '0:00';
+        const mins = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
+      },
+      debounce: (func, wait) => {
+        let timeout;
+        return function executedFunction(...args) {
+          clearTimeout(timeout);
+          timeout = setTimeout(() => func.apply(this, args), wait);
+        };
+      },
+      showLoading: (show = true, isLive = false) => {
+        if (show) {
+          DOM.loadingIndicator.addClass('show');
+          if (isLive) {
+            DOM.normalSpinner.hide();
+            DOM.antennaSpinner.show();
+            DOM.loadingText.text('Transmisión en vivo - Robot YOuPser conectando...');
+          } else {
+            DOM.normalSpinner.show();
+            DOM.antennaSpinner.hide();
+            DOM.loadingText.text('Cargando desde SuperAudio...');
+          }
+        } else {
+          DOM.loadingIndicator.removeClass('show');
+        }
+        DOM.loading.toggle(show);
+      },
+      showStatus: (message, type = 'info') => {
+        DOM.status.removeClass('error warning live').addClass(
+          type === 'error' ? 'error' : 
+          type === 'warning' ? 'warning' : 
+          type === 'live' ? 'live' : ''
+        );
+        DOM.status.text(message).addClass('show');
+        setTimeout(() => DOM.status.removeClass('show'), 3000);
+      },
+      updateURL: (type, data) => {
+        const url = new URL(window.location);
+        url.searchParams.set('type', type);
+        if (typeof data === 'string') {
+          url.searchParams.set('name', data);
+        } else {
+          Object.entries(data).forEach(([key, value]) => {
+            url.searchParams.set(key, value);
+          });
+        }
+        window.history.pushState({}, '', url);
+      },
+      // Función para resaltar coincidencias
+      highlightMatch: (text, query) => {
+        if (!query || !text) return text;
+        const regex = new RegExp(`(${utils.escapeHtml(query)})`, 'gi');
+        return text.replace(regex, '<span class="highlight">$1</span>');
+      },
+      // Función para obtener el año de una fecha
+      getYear: (dateString) => {
+        if (!dateString) return null;
+        const date = new Date(dateString);
+        return isNaN(date.getTime()) ? null : date.getFullYear();
+      },
+      // Función para agrupar álbumes por año
+      groupAlbumsByYear: (albums) => {
+        const grouped = {};
+        albums.forEach(album => {
+          const year = utils.getYear(album.wiki?.published) || 'Sin fecha faillure';
+          if (!grouped[year]) grouped[year] = [];
+          grouped[year].push(album);
+        });
+        return grouped;
+      },
+      // Efecto de escritura para biografías
+      typewriterEffect: (element, text, speed = 30) => {
+        element.empty();
+        let i = 0;
+        const timer = setInterval(() => {
+          if (i < text.length) {
+            const char = text.charAt(i);
+            const span = $('<span class="bio-text"></span>').text(char);
+            element.append(span);
+            setTimeout(() => span.addClass('visible'), 10);
+            i++;
+          } else {
+            clearInterval(timer);
+          }
+        }, speed);
+      }
+    };
+    // API Functions mejoradas
+    const api = {
+      async searchArtists(query) {
+        return $.get(CONFIG.baseUrl, {
+          method: 'artist.search',
+          artist: query,
+          api_key: CONFIG.apiKey,
+          format: 'json',
+          limit: CONFIG.limits.artists
+        });
+      },
+      async searchAlbums(query) {
+        return $.get(CONFIG.baseUrl, {
+          method: 'album.search',
+          album: query,
+          api_key: CONFIG.apiKey,
+          format: 'json',
+          limit: CONFIG.limits.albums
+        });
+      },
+      async searchTracks(query) {
+        return $.get(CONFIG.baseUrl, {
+          method: 'track.search',
+          track: query,
+          api_key: CONFIG.apiKey,
+          format: 'json',
+          limit: CONFIG.limits.tracks
+        });
+      },
+      async getArtistInfo(artist) {
+        return $.get(CONFIG.baseUrl, {
+          method: 'artist.getInfo',
+          artist: artist,
+          api_key: CONFIG.apiKey,
+          format: 'json'
+        });
+      },
+      async getArtistAlbums(artist, page = 1) {
+        return $.get(CONFIG.baseUrl, {
+          method: 'artist.getTopAlbums',
+          artist: artist,
+          api_key: CONFIG.apiKey,
+          format: 'json',
+          limit: 50, // Más álbumes para agrupar por añommmm
+          page: page
+        });
+      },
+      async getArtistTracks(artist) {
+        return $.get(CONFIG.baseUrl, {
+          method: 'artist.getTopTracks',
+          artist: artist,
+          api_key: CONFIG.apiKey,
+          format: 'json',
+          limit: 10
+        });
+      },
+      async getAlbumInfo(artist, album) {
+        return $.get(CONFIG.baseUrl, {
+          method: 'album.getInfo',
+          artist: artist,
+          album: album,
+          api_key: CONFIG.apiKey,
+          format: 'json'
+        });
+      }
+    };
+    // Search Functions mejoradas
+    const search = {
+      async performSearch(query) {
+        if (!query || query.length < 2) {
+          DOM.suggestions.hide();
+          return;
+        }
+        STATE.currentQuery = query;
+        utils.showLoading(true);
+        try {
+          const [artistsData, albumsData, tracksData] = await Promise.all([
+            api.searchArtists(query),
+            api.searchAlbums(query),
+            api.searchTracks(query)
+          ]);
+          this.displayResults(artistsData, albumsData, tracksData, query);
+        } catch (error) {
+          console.error('Search error:', error);
+          utils.showStatus('Error en la búsqueda. Intenta de nuevo. NO TESNES INTERNET...', 'error');
+        } finally {
+          utils.showLoading(false);
+        }
+      },
+      displayResults(artistsData, albumsData, tracksData, query) {
+        DOM.suggestions.empty();
+        const artists = artistsData.results?.artistmatches?.artist || [];
+        const albums = albumsData.results?.albummatches?.album || [];
+        const tracks = tracksData.results?.trackmatches?.track || [];
+        if (!artists.length && !albums.length && !tracks.length) {
+          DOM.suggestions.html('<div class="no-results">No se encontraron resultados</div>');
+          DOM.suggestions.show();
+          return;
+        }
+        // Artistas
+        if (artists.length) {
+          DOM.suggestions.append(`
+            <div class="suggestion-category">
+              <div class="category-icon artist"></div>
+              Artistas
+            </div>
+          `);
+          artists.forEach(artist => this.addSuggestionItem('artist', {
+            name: artist.name,
+            subtitle: 'Artista',
+            image: artist.image?.[1]?.['#text'] || CONFIG.defaultImage
+          }, query));
+        }
+        // Álbumes
+        if (albums.length) {
+          DOM.suggestions.append(`
+            <div class="suggestion-category">
+              <div class="category-icon album"></div>
+              Álbumes
+            </div>
+          `);
+          albums.forEach(album => this.addSuggestionItem('album', {
+            name: album.name,
+            artist: album.artist,
+            subtitle: `Álbum • ${album.artist}`,
+            image: album.image?.[1]?.['#text'] || CONFIG.defaultImage
+          }, query));
+        }
+        // Canciones
+        if (tracks.length) {
+          DOM.suggestions.append(`
+            <div class="suggestion-category">
+              <div class="category-icon track"></div>
+              Canciones
+            </div>
+          `);
+          tracks.forEach(track => this.addSuggestionItem('track', {
+            name: track.name,
+            artist: track.artist,
+            subtitle: `Canción • ${track.artist}`,
+            image: track.image?.[1]?.['#text'] || CONFIG.defaultImage
+          }, query));
+        }
+        DOM.suggestions.show();
+      },
+      addSuggestionItem(type, item, query) {
+        const highlightedName = utils.highlightMatch(item.name, query);
+        const highlightedSubtitle = utils.highlightMatch(item.subtitle, query);
+        const html = `
+          <div class="suggestion-item" data-type="${type}" data-name="${utils.escapeHtml(item.name)}" data-artist="${utils.escapeHtml(item.artist || '')}">
+            <img class="suggestion-img" src="${item.image}" alt="" onerror="this.src='${CONFIG.defaultImage}'">
+            <div class="suggestion-content">
+              <div class="suggestion-title">${highlightedName}</div>
+              <div class="suggestion-subtitle">${highlightedSubtitle}</div>
+            </div>
+          </div>
+        `;
+        DOM.suggestions.append(html);
+      }
+    };
+    // Display Functions mejoradas
+    const display = {
+      showWelcome() {
+        DOM.welcome.show();
+        DOM.content.empty();
+        window.history.pushState({}, '', window.location.pathname);
+      },
+      async showArtist(artistName) {
+        DOM.welcome.hide();
+        utils.showLoading(true);
+        try {
+          const [artistData, albumsData, tracksData] = await Promise.all([
+            api.getArtistInfo(artistName),
+            api.getArtistAlbums(artistName),
+            api.getArtistTracks(artistName)
+          ]);
+          STATE.currentArtist = artistName;
+          utils.updateURL('artist', artistName);
+          this.renderArtistPage(artistData.artist, albumsData.topalbums?.album || [], tracksData.toptracks?.track || []);
+        } catch (error) {
+          console.error('Artist error:', error);
+          this.showError('No se pudo cargar la información del artista.');
+        } finally {
+          utils.showLoading(false);
+        }
+      },
+      async showAlbum(albumName, artistName) {
+        DOM.welcome.hide();
+        utils.showLoading(true);
+        try {
+          const albumData = await api.getAlbumInfo(artistName, albumName);
+          STATE.currentAlbum = { name: albumName, artist: artistName };
+          utils.updateURL('album', { name: albumName, artist: artistName });
+          this.renderAlbumPage(albumData.album);
+        } catch (error) {
+          console.error('Album error:', error);
+          this.showError('No se pudo cargar la información del álbum.');
+        } finally {
+          utils.showLoading(false);
+        }
+      },
+      renderArtistPage(artist, albums, tracks) {
+        const image = artist.image?.[3]?.['#text'] || CONFIG.defaultImage;
+        const bio = artist.bio?.summary?.split('<a')[0] || 'No hay biografía disponible.';
+        const tags = artist.tags?.tag?.map(tag => `<span class="tag">${tag.name}</span>`).join('') || '';
+        const processedAlbums = albums.map(album => {
+          let type = 'album';
+          const nameLC = album.name.toLowerCase();
+          if (nameLC.includes('live')) type = 'live';
+          else if (nameLC.includes('ep')) type = 'ep';
+          else if (nameLC.includes('single')) type = 'single';
+          else if (nameLC.includes('remix')) type = 'remix';
+          return { ...album, type };
+        });
+        // Agrupar álbumes por año
+        const albumsByYear = utils.groupAlbumsByYear(processedAlbums);
+        const years = Object.keys(albumsByYear).sort((a, b) => {
+          if (a === 'Sin fecha') return 1;
+          if (b === 'Sin fecha') return -1;
+          return parseInt(b) - parseInt(a);
+        });
+        const html = `
+          <div class="page">
+            <div class="page-header">
+              <img class="page-image" src="${image}" alt="${utils.escapeHtml(artist.name)}" onerror="this.src='${CONFIG.defaultImage}'">
+              <div class="page-info">
+                <h1>${utils.escapeHtml(artist.name)}</h1>
+                <div class="page-meta">
+                  <span>Artista</span>
+                  ${artist.stats?.playcount ? `<span>${parseInt(artist.stats.playcount).toLocaleString()} reproducciones</span>` : ''}
+                  ${artist.stats?.listeners ? `<span>${parseInt(artist.stats.listeners).toLocaleString()} oyentes</span>` : ''}
+                </div>
+                ${tags ? `<div class="tags">${tags}</div>` : ''}
+                <div class="page-bio" id="artistBio"></div>
+              </div>
+            </div>
+            ${tracks.length ? `
+              <section>
+                <h2>Canciones Populares</h2>
+                <div class="tracks-list">
+                  ${tracks.map((track, index) => `
+                    <div class="track-item" onclick="player.playTrack('${utils.escapeHtml(track.name)}', '${utils.escapeHtml(artist.name)}', ${index + 1})">
+                      <span class="track-number">${(index + 1).toString().padStart(2, '0')}</span>
+                      <img class="track-thumb" src="${track.image?.[1]?.['#text'] || CONFIG.defaultImage}" alt="" onerror="this.src='${CONFIG.defaultImage}'">
+                      <div class="track-info">
+                        <div class="track-name">${utils.escapeHtml(track.name)}</div>
+                        <div class="track-artist">${utils.escapeHtml(artist.name)}</div>
+                      </div>
+                      <div class="track-duration">${utils.formatDuration(parseInt(track.duration))}</div>
+                      <div class="track-actions">
+                        <button class="track-action" title="Agregar a favoritos">♥</button>
+                        <button class="track-action" title="Más opciones">⋯</button>
+                      </div>
+                    </div>
+                  `).join('')}
+                </div>
+              </section>
+            ` : ''}
+            ${albums.length ? `
+              <section class="albums-by-year">
+                <h2>Álbumes por Año</h2>
+                ${years.map(year => `
+                  <div class="year-group">
+                    <h3 class="year-header">${year}</h3>
+                    <div class="albums-grid">
+                      ${albumsByYear[year].map(album => `
+                        <div class="album-card" data-type="${album.type}" onclick="display.showAlbum('${utils.escapeHtml(album.name)}', '${utils.escapeHtml(artist.name)}')">
+                          <img src="${album.image?.[2]?.['#text'] || CONFIG.defaultImage}" alt="${utils.escapeHtml(album.name)}" onerror="this.src='${CONFIG.defaultImage}'">
+                          <div class="album-card-info">
+                            <h3>${utils.escapeHtml(album.name)}</h3>
+                            <div class="album-meta">
+                              <span class="album-type ${album.type}">${album.type}</span>
+                              ${album.playcount ? `<span>${parseInt(album.playcount).toLocaleString()}</span>` : ''}
+                            </div>
+                          </div>
+                        </div>
+                      `).join('')}
+                    </div>
+                  </div>
+                `).join('')}
+              </section>
+            ` : ''}
+          </div>
+        `;
+        DOM.content.html(html);
+        // Aplicar efecto de escritura a la biografía
+        if (bio && bio !== 'No hay biografía disponible.') {
+          const bioElement = $('#artistBio');
+          utils.typewriterEffect(bioElement, bio, 25);
+        }
+        DOM.suggestions.hide();
+      },
+      renderAlbumPage(album) {
+        const tracks = album.tracks?.track || [];
+        const image = album.image?.[3]?.['#text'] || CONFIG.defaultImage;
+        const releaseYear = album.wiki?.published ? new Date(album.wiki.published).getFullYear() : '';
+        const html = `
+          <div class="page">
+            <div class="page-header">
+              <img class="page-image" src="${image}" alt="${utils.escapeHtml(album.name)}" onerror="this.src='${CONFIG.defaultImage}'">
+              <div class="page-info">
+                <h1>${utils.escapeHtml(album.name)}</h1>
+                <h2 class="page-subtitle" onclick="display.showArtist('${utils.escapeHtml(album.artist)}')">${utils.escapeHtml(album.artist)}</h2>
+                <div class="page-meta">
+                  <span>Álbum</span>
+                  ${releaseYear ? `<span>${releaseYear}</span>` : ''}
+                  <span>${tracks.length} canciones</span>
+                  ${album.playcount ? `<span>${parseInt(album.playcount).toLocaleString()} reproducciones</span>` : ''}
+                </div>
+                ${album.wiki?.summary ? `<div class="page-bio" id="albumBio"></div>` : ''}
+              </div>
+            </div>
+            ${tracks.length ? `
+              <section>
+                <h2>Lista de Canciones</h2>
+                <div class="tracks-list">
+                  ${tracks.map((track, index) => `
+                    <div class="track-item" onclick="player.playTrack('${utils.escapeHtml(track.name)}', '${utils.escapeHtml(album.artist)}', ${index + 1})">
+                      <span class="track-number">${(index + 1).toString().padStart(2, '0')}</span>
+                      <img class="track-thumb" src="${image}" alt="" onerror="this.src='${CONFIG.defaultImage}'">
+                      <div class="track-info">
+                        <div class="track-name">${utils.escapeHtml(track.name)}</div>
+                        <div class="track-artist">${utils.escapeHtml(album.artist)}</div>
+                      </div>
+                      <div class="track-duration">${utils.formatDuration(parseInt(track.duration))}</div>
+                      <div class="track-actions">
+                        <button class="track-action" title="Agregar a favoritos">♥</button>
+                        <button class="track-action" title="Más opciones">⋯</button>
+                      </div>
+                    </div>
+                  `).join('')}
+                </div>
+              </section>
+            ` : ''}
+          </div>
+        `;
+        DOM.content.html(html);
+        // Aplicar efecto de escritura a la biografía del álbum
+        if (album.wiki?.summary) {
+          const bioElement = $('#albumBio');
+          const bioText = album.wiki.summary.split('<a')[0];
+          utils.typewriterEffect(bioElement, bioText, 25);
+        }
+        DOM.suggestions.hide();
+      },
+      showError(message) {
+        DOM.content.html(`
+          <div class="error-message">
+            <h2>Error</h2>
+            <p>${message}</p>
+          </div>
+        `);
+      }
+    };
+    // Enhanced Player Functions
+    const player = {
+      async playTrack(trackName, artistName, trackNumber = 1) {
+        STATE.loadStartTime = Date.now();
+        utils.showLoading(true);
+        utils.showStatus('Analizando disponibilidad...');
+        STATE.isLive = false;
+        DOM.liveIndicator.hide();
+        // Limpiar intervalo anterior si existe
+        if (STATE.liveCheckInterval) {
+          clearInterval(STATE.liveCheckInterval);
+          STATE.liveCheckInterval = null;
+        }
+        const formattedTrack = String(trackNumber).padStart(2, '0');
+        const encodedArtist = encodeURIComponent(artistName.toLowerCase().replace(/\s+/g, ''));
+        const encodedAlbum = STATE.currentAlbum ? encodeURIComponent(STATE.currentAlbum.name.toLowerCase().replace(/\s+/g, '')) : '';
+        // Primera solicitud al endpoint principal
+        const primaryAudioUrl = `${CONFIG.audioEndpoint}?id=${encodeURIComponent(artistName)}%20${encodeURIComponent(trackName)}&resting=${encodedArtist}/${encodedAlbum}/${formattedTrack}`;
+        try {
+          const response = await fetch(primaryAudioUrl);
+          const loadTime = Date.now() - STATE.loadStartTime;
+          if (loadTime > CONFIG.liveThreshold) {
+            // Es probablemente una transmisión en vivo, usar endpoint alternativo
+            STATE.isLive = true;
+            utils.showLoading(true, true);
+            utils.showStatus('Transmisión en vivo desde Robot YOuPser', 'live');
+            const liveAudioUrl = `${CONFIG.liveAudioEndpoint}?id=${encodeURIComponent(artistName)}%20${encodeURIComponent(trackName)}&resting=${encodedArtist}/${encodedAlbum}/${formattedTrack}`;
+            // Intentar obtener datos del endpoint de transmisión en vivo
+            const liveResponse = await fetch(liveAudioUrl);
+            const liveData = await liveResponse.json();
+            if (liveData.url) {
+              // Usar la URL proporcionada por el endpoint de transmisión en vivo
+              DOM.audioPlayer.src = liveData.url;
+              console.log(liveData.url);
+              // Iniciar reproducción inmediatamente
+              const coverUrl = liveData.cover_url || CONFIG.defaultImage;
+              DOM.playerTrack.contents().filter((_, el) => el.nodeType === 3).first()[0].textContent = trackName;
+              DOM.playerArtist.text(artistName);
+              DOM.playerThumb.attr('src', coverUrl);
+              await DOM.audioPlayer.play();
+              STATE.isPlaying = true;
+              DOM.playBtn.html('⏸');
+              DOM.liveIndicator.show();
+              // Guardar la URL actual para posibles recargas
+              STATE.lastPlayedUrl = liveData.url;
+              // Establecer intervalo para recargar cada 3 segundos si es transmisión en vivo
+              STATE.liveCheckInterval = setInterval(async () => {
+                if (STATE.isLive && DOM.audioPlayer.paused === false) {
+                  try {
+                    const refreshResponse = await fetch(liveAudioUrl);
+                    const refreshData = await refreshResponse.json();
+                    if (refreshData.url && refreshData.url !== DOM.audioPlayer.src) {
+                      const oldTime = DOM.audioPlayer.currentTime;
+                      DOM.audioPlayer.src = refreshData.url;
+                      STATE.lastPlayedUrl = refreshData.url;
+                      await DOM.audioPlayer.play();
+                      DOM.audioPlayer.currentTime = oldTime;
+                    }
+                  } catch (error) {
+                    console.warn('Error al actualizar transmisión en vivo:', error);
+                  }
+                }
+              }, CONFIG.liveReloadInterval);
+              return;
+            }
+          }
+          // Si no es transmisión en vivo o si falló, procesar respuesta normal
+          const data = await response.json();
+          if (data.flac_url) {
+            DOM.audioPlayer.src = data.flac_url;
+            const coverUrl = data.cover_url || CONFIG.defaultImage;
+            DOM.playerTrack.contents().filter((_, el) => el.nodeType === 3).first()[0].textContent = trackName;
+            DOM.playerArtist.text(artistName);
+            DOM.playerThumb.attr('src', coverUrl);
+            await DOM.audioPlayer.play();
+            STATE.isPlaying = true;
+            DOM.playBtn.html('⏸');
+            if (STATE.isLive) {
+              utils.showStatus('🔴 EN VIVO: ' + trackName, 'live');
+            } else {
+              utils.showStatus('▶ Reproduciendo desde CDN Superaudio', 'info');
+            }
+          } else {
+            throw new Error('Audio no disponible');
+          }
+        } catch (error) {
+          console.error('Play error:', error);
+          // Si falla el endpoint principal, intentar con el de transmisión en vivo como respaldo
+          if (!STATE.isLive) {
+            try {
+              STATE.isLive = true;
+              utils.showLoading(true, true);
+              utils.showStatus('Intentando conexión en vivo...', 'live');
+              const liveAudioUrl = `${CONFIG.liveAudioEndpoint}?id=${encodeURIComponent(artistName)}%20${encodeURIComponent(trackName)}&resting=${encodedArtist}/${encodedAlbum}/${formattedTrack}`;
+              const liveResponse = await fetch(liveAudioUrl);
+              const liveData = await liveResponse.json();
+              if (liveData.url) {
+                DOM.audioPlayer.src = liveData.url;
+                const coverUrl = liveData.cover_url || CONFIG.defaultImage;
+                DOM.playerTrack.contents().filter((_, el) => el.nodeType === 3).first()[0].textContent = trackName;
+                DOM.playerArtist.text(artistName);
+                DOM.playerThumb.attr('src', coverUrl);
+                await DOM.audioPlayer.play();
+                STATE.isPlaying = true;
+                DOM.playBtn.html('⏸');
+                DOM.liveIndicator.show();
+                STATE.lastPlayedUrl = liveData.url;
+                // Establecer intervalo para recargar cada 3 segundos
+                STATE.liveCheckInterval = setInterval(async () => {
+                  if (STATE.isLive && DOM.audioPlayer.paused === false) {
+                    try {
+                      const refreshResponse = await fetch(liveAudioUrl);
+                      const refreshData = await refreshResponse.json();
+                      if (refreshData.url && refreshData.url !== DOM.audioPlayer.src) {
+                        const oldTime = DOM.audioPlayer.currentTime;
+                        DOM.audioPlayer.src = refreshData.url;
+                        STATE.lastPlayedUrl = refreshData.url;
+                        await DOM.audioPlayer.play();
+                        DOM.audioPlayer.currentTime = oldTime;
+                      }
+                    } catch (error) {
+                      console.warn('Error al actualizar transmisión en vivo:', error);
+                    }
+                  }
+                }, CONFIG.liveReloadInterval);
+                return;
+              }
+            } catch (liveError) {
+              console.error('Error en conexión en vivo:', liveError);
+            }
+          }
+          utils.showStatus('El disco no está disponible en este momento', 'error');
+        } finally {
+          utils.showLoading(false);
+        }
+      },
+      togglePlayPause() {
+        if (!DOM.audioPlayer.src) return;
+        if (STATE.isPlaying) {
+          DOM.audioPlayer.pause();
+          STATE.isPlaying = false;
+          DOM.playBtn.html('▶');
+        } else {
+          DOM.audioPlayer.play();
+          STATE.isPlaying = true;
+          DOM.playBtn.html('⏸');
+        }
+      },
+      updateProgress() {
+        if (DOM.audioPlayer.duration) {
+          const percent = (DOM.audioPlayer.currentTime / DOM.audioPlayer.duration) * 100;
+          DOM.progressFill.css('width', percent + '%');
+          DOM.currentTime.text(utils.formatTime(DOM.audioPlayer.currentTime));
+          DOM.totalTime.text(utils.formatTime(DOM.audioPlayer.duration));
+        }
+      },
+      seekTo(percent) {
+        if (DOM.audioPlayer.duration) {
+          DOM.audioPlayer.currentTime = (percent / 100) * DOM.audioPlayer.duration;
+        }
+      }
+    };
+    // Event Listeners
+    function initEventListeners() {
+      // Search con debounce mejorado
+      DOM.searchInput.on('input', utils.debounce(() => {
+        search.performSearch(DOM.searchInput.val().trim());
+      }, 200)); // Reducido para mayor responsividad
+      DOM.searchInput.on('focus', () => {
+        if (STATE.currentQuery && DOM.suggestions.children().length > 0) {
+          DOM.suggestions.show();
+        }
+      });
+      // Suggestions
+      $(document).on('click', '.suggestion-item', function() {
+        const type = $(this).data('type');
+        const name = $(this).data('name');
+        const artist = $(this).data('artist');
+        DOM.suggestions.hide();
+        switch(type) {
+          case 'artist':
+            display.showArtist(name);
+            break;
+          case 'album':
+            if (artist) display.showAlbum(name, artist);
+            break;
+          case 'track':
+            if (artist) player.playTrack(name, artist, 1);
+            break;
+        }
+      });
+      // Hide suggestions when clicking outside
+      $(document).on('click', (e) => {
+        if (!$(e.target).closest('.search-container').length) {
+          DOM.suggestions.hide();
+        }
+      });
+      // Keyboard navigation mejorada
+      DOM.searchInput.on('keydown', (e) => {
+        const items = $('.suggestion-item');
+        if (!items.length) return;
+        let current = $('.suggestion-item.highlighted').index();
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          current = current < items.length - 1 ? current + 1 : 0;
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          current = current > 0 ? current - 1 : items.length - 1;
+        } else if (e.key === 'Enter') {
+          e.preventDefault();
+          if (current >= 0) {
+            items.eq(current).click();
+          }
+          return;
+        } else if (e.key === 'Escape') {
+          DOM.suggestions.hide();
+          return;
+        } else {
+          return;
+        }
+        items.removeClass('highlighted').eq(current).addClass('highlighted');
+      });
+      // Player controls
+      DOM.playBtn.on('click', () => player.togglePlayPause());
+      // Enhanced progress bar - clickable entire bar
+      DOM.progressBar.on('click', (e) => {
+        const rect = DOM.progressBar[0].getBoundingClientRect();
+        const percent = ((e.clientX - rect.left) / rect.width) * 100;
+        player.seekTo(percent);
+      });
+      // Audio events
+      DOM.audioPlayer.addEventListener('timeupdate', () => player.updateProgress());
+      DOM.audioPlayer.addEventListener('ended', () => {
+        STATE.isPlaying = false;
+        DOM.playBtn.html('▶');
+        DOM.progressFill.css('width', '0%');
+        DOM.liveIndicator.hide();
+        STATE.isLive = false;
+        // Limpiar intervalo de recarga si existe
+        if (STATE.liveCheckInterval) {
+          clearInterval(STATE.liveCheckInterval);
+          STATE.liveCheckInterval = null;
+        }
+      });
+      // URL handling
+      window.addEventListener('popstate', loadFromURL);
+    }
+    // URL routing
+    function loadFromURL() {
+      const params = new URLSearchParams(window.location.search);
+      const type = params.get('type');
+      const name = params.get('name');
+      const artist = params.get('artist');
+      if (type && name) {
+        switch(type) {
+          case 'artist':
+            display.showArtist(name);
+            break;
+          case 'album':
+            if (artist) display.showAlbum(name, artist);
+            break;
+        }
+      } else {
+        display.showWelcome();
+      }
+    }
+    // Global functions
+    window.showWelcome = () => display.showWelcome();
+    // Initialize
+    $(document).ready(() => {
+      initEventListeners();
+      loadFromURL();
+      // Initialize equalizer as active by default
+      STATE.equalizerActive = true;
+      DOM.frequencyViz.addClass('active');
+      DOM.eqToggle.addClass('active');
+      // Set volume to 21%
+      DOM.audioPlayer.volume = CONFIG.volume;
+    });
+    // ECUALIZADOR YOuP SISTEMA COMPLETO V3.0 ENHANCED
+    define("frequency-draw", ["require", "exports"], (function(e, t) {
+        "use strict";
+        Object.defineProperty(t, "__esModule", {
+            value: !0
+        });
+        var r = function() {
+            function e() {
+                this.canvas = document.createElement("canvas"), 
+                this.canvas.width = 1024, 
+                this.canvas.height = 128, 
+                this.ctx = this.canvas.getContext("2d"), 
+                this.backgroundColor = "#039"
+            }
+            return e.prototype.draw = function(e) {
+                e.fftSize = 2048;
+                var t = new Uint8Array(e.fftSize);
+                e.getByteTimeDomainData(t);
+                var r, i = this.ctx,
+                    n = i.canvas,
+                    a = t.length,
+                    s = n.width / a,
+                    u = 0;
+                i.save(), i.fillStyle = this.backgroundColor, i.fillRect(0, 0, n.width, n.height), i.beginPath();
+                for (var o = 0; o < a; o++) r = t[o] / 128 * n.height / 2, 0 === o ? i.moveTo(u, r) : i.lineTo(u, r), u += s;
+                i.lineWidth = 2, i.strokeStyle = "#DBDBDB", i.stroke(), i.restore()
+            }, e
+        }();
+        t.LineDraw = r;
+        var i = function() {
+            function e() {
+                this.canvas = document.createElement("canvas"), 
+                this.canvas.width = 1280, 
+                this.canvas.height = 128, 
+                this.ctx = this.canvas.getContext("2d"), 
+                this.backgroundColor = "black", 
+                this.gradient = this.ctx.createLinearGradient(0, 0, 0, this.canvas.height), 
+                this.gradient.addColorStop(0, "#ff4446"), 
+                this.gradient.addColorStop(1, "#4446ff")
+            }
+            return e.prototype.draw = function(e) {
+                e.fftSize = 256;
+                var t = new Uint8Array(e.frequencyBinCount);
+                e.getByteFrequencyData(t);
+                var r = this.ctx,
+                    i = r.canvas,
+                    n = t.length;
+                r.save(), r.fillStyle = this.backgroundColor, r.fillRect(0, 0, i.width, i.height), r.transform(1, 0, 0, -1, 0, i.height), r.fillStyle = this.gradient;
+                for (var a = i.width / n, s = 0, u = 0, o = 0; o < t.length; o++) u = t[o] / 255 * i.height, r.fillRect(s + 1, 0, a - 2, u), s += a;
+                r.restore()
+            }, e
+        }();
+        t.BarDraw = i
+    }));
+    define("equalizer", ["require", "exports"], (function(e, t) {
+        "use strict";
+        Object.defineProperty(t, "__esModule", {
+            value: !0
+        });
+        var r = function() {
+            function e(e) {
+                this.frequencys = e, 
+                this.count = e.length, 
+                this.filters = new Array(this.count)
+            }
+            return e.prototype.init = function(e) {
+                var t, r = 0;
+                for (r = 0; r < this.count; r++)(
+                    t = e.createBiquadFilter()).type = "peaking",
+                 t.frequency.value = this.frequencys[r],
+                 this.filters[r] = t,
+                 this.filters[r - 1] && this.filters[r - 1].connect(this.filters[r])
+            }, Object.defineProperty(e.prototype, "first", {
+                get: function() {
+                    return this.filters[0]
+                },
+                enumerable: !0,
+                configurable: !0
+            }), Object.defineProperty(e.prototype, "last", {
+                get: function() {
+                    return this.filters[this.count - 1]
+                },
+                enumerable: !0,
+                configurable: !0
+            }), e
+        }();
+        t.EqualizerFilter = r;
+        var i = function() {
+            function e() {
+                this.presets = {
+                    Manual: {
+                        name: "Manual",
+                        values: [8, 5, 3, 3, 1, 3, 3, 3, 3, 3, 8, 8, 13]
+                    },
+                    Dance: {
+                        name: "Dance",
+                        values: [8, 5, 3, 3, 1, 3, 3, 3, 3, 3, 8, 8, 13]
+                    },
+                    Default: {
+                        name: "Modulo Youp",
+                        values: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+                    }
+                }, //wiempre regla diviasi a 1 1 2 1 3 2 1 5 asi  21 max esscucha el oido
+                this.frequencys = [55, 89, 144, 233, 377, 610, 987, 1597, 2584, 4181, 6765, 10946, 17711], 
+                this.eqFilter = new r(this.frequencys)
+            }
+            return e.prototype.init = function(e) {
+                this.eqFilter.init(e)
+            }, e.prototype.use = function(e) {
+                for (var t = this.presets[e] || this.presets[0], r = 0; r < this.eqFilter.filters.length; r++) {
+                    this.eqFilter.filters[r].gain.value = t.values[r];
+                }
+                console.log('Preset aplicado: ' + e);
+            }, e.prototype.reset = function() {
+                for (var e = 0; e < this.eqFilter.filters.length; e++) {
+                    this.eqFilter.filters[e].gain.value = 0
+                }
+            }, e.prototype.set = function(e, t) {
+                this.eqFilter.filters[e].gain.value = t
+            }, e.prototype.get = function(e) {
+                return this.eqFilter.filters[e].gain.value
+            }, e.prototype.connect = function(e, t) {
+                this.eqFilter && (e.connect(this.eqFilter.first), this.eqFilter.last.connect(t))
+            }, e.prototype.toString = function() {
+                for (var e = [], t = 0; t < this.eqFilter.filters.length; t++) {
+                    e[t] = this.eqFilter.filters[t].gain.value;
+                }
+                return e.toString()
+            }, e
+        }();
+        t.Equalizer = i
+    }));
+    define("equalizer-ui", ["require", "exports"], (function(e, t) {
+        "use strict";
+        Object.defineProperty(t, "__esModule", {
+            value: !0
+        });
+        var r = function() {
+            this.div = document.createElement("div"), 
+            this.freq = document.createElement("span"), 
+            this.input = document.createElement("input"), 
+            this.label = document.createElement("span"), 
+            this.div.className = "slide-wrapper", 
+            this.input.type = "range", 
+            this.input.min = "-13", 
+            this.input.max = "13", 
+            this.input.value = "0", 
+            this.input.className = "rechancices", 
+            this.freq.className = "scope", 
+            this.freq.textContent = "", 
+            this.label.className = "scope", 
+            this.label.textContent = this.input.value + " dB", 
+            this.div.appendChild(this.freq), 
+            this.div.appendChild(this.input), 
+            this.div.appendChild(this.label)
+        };
+        t.EqualizerUIItem = r;
+        var i = function() {
+            function e(e) {
+                this.el = document.createElement("div"), 
+                this.el.className = "equalizer", 
+                this.comboxEqualizer = document.createElement("select"), 
+                this.items = [], 
+                this.updateItems(e)
+            }
+            return e.prototype.updateItems = function(e) {
+                for (var t = 0; t < e; t++) {
+                    var r = this.createItem(t);
+                    this.el.appendChild(r.div), 
+                    this.items[t] = r
+                }
+            }, e.prototype.createItem = function(e) {
+                var t = this,
+                    r = new i;
+                return r.input.addEventListener("input", (function() {
+                    t.update && t.update(r, e);
+                    console.log('Slider actualizado: ' + e)
+                }), !1), r
+            }, e
+        }();
+        t.EqualizerUI = i
+    }));
+    define("audio-player", ["require", "exports", "equalizer", "equalizer-ui"], (function(e, t, r, i) {
+        "use strict";
+        Object.defineProperty(t, "__esModule", {
+            value: !0
+        });
+        var n = function() {
+            function e() {
+                this.eq = new r.Equalizer, 
+                this.ui = new i.EqualizerUI(this.eq.frequencys.length), 
+                this.audioCtx = new AudioContext, 
+                this.analyser = this.audioCtx.createAnalyser(), 
+                this.eq.init(this.audioCtx);
+                for (var e = 0, t = void 0; e < this.ui.items.length; e++) {
+                    t = this.ui.items[e], 
+                    this.eq.frequencys[e] > 2e3 ? 
+                    t.freq.textContent = Math.floor(this.eq.frequencys[e] / 1e3) + "K" : 
+                    t.freq.textContent = this.eq.frequencys[e] + ""
+                }
+            }
+            return Object.defineProperty(e.prototype, "width", {
+                get: function() {
+                    return this.usedDraw ? this.width : 0
+                },
+                enumerable: !0,
+                configurable: !0
+            }), Object.defineProperty(e.prototype, "height", {
+                get: function() {
+                    return this.usedDraw ? this.height : 0
+                },
+                enumerable: !0,
+                configurable: !0
+            }), e.prototype.useDraw = function(e) {
+                this.usedDraw = e
+            }, e.prototype.connect = function(e) {
+                this.mediaSource = this.audioCtx.createMediaElementSource(e), 
+                this.eq ? this.eq.connect(this.mediaSource, this.analyser) : this.mediaSource.connect(this.analyser), 
+                this.analyser.connect(this.audioCtx.destination)
+            }, e.prototype.sync = function(e) {
+                this.usedDraw && (e.canvas.width = this.width, e.canvas.height = this.height, e.drawImage(this.usedDraw.canvas, 0, 0, e.canvas.width, e.canvas.height))
+            }, e.prototype.update = function() {
+                this.usedDraw && this.usedDraw.draw(this.analyser)
+            }, e
+        }();
+        t.AudioPlayer = n
+    }));
+    define("main", ["require", "exports", "frequency-draw", "audio-player"], (function(e, t, r, i) {
+        "use strict";
+        function n(e) {
+            return document.getElementById(e)
+        }
+        Object.defineProperty(t, "__esModule", {
+            value: !0
+        });
+        if (AudioContext) {
+            (function() {
+                var e = n("play"),
+                    t = n("f"),
+                    a = n("fullscreen"),
+                    s = n("equalizer"),
+                    u = n("v"),
+                    o = n("cv").getContext("2d"),
+                    c = {
+                        src: ""
+                    },
+                    l = n("combox-equalizer"),
+                    h = n("combox-draw"),
+                    d = new i.AudioPlayer,
+                    f = new r.LineDraw,
+                    p = new r.BarDraw,
+                    v = !1;
+                function y() {
+                    if (!v) {
+                        d.useDraw(p), 
+                        d.eq && d.eq.reset(), 
+                        q(), 
+                        d.connect(u), 
+                        v = !0;
+                        STATE.equalizerConnected = true;
+                        DOM.eqToggle.addClass('active');
+                        DOM.frequencyViz.addClass('active');
+                        console.log('Ecualizador YOuP V3.0 Enhanced conectado exitosamente');
+                    }
+                }
+                function q() {
+                    for (var e = 0; e < 13; e++) {
+                        var t = d.ui.items[e];
+                        if (d.eq) {
+                            t.input.className = "ertert" + e, 
+                            t.input.value = d.eq.get(e) + "", 
+                            t.label.textContent = t.input.value + " dB";
+                        }
+                    }
+                }
+                function m() {
+                    if (!u.paused) {
+                        d.update(), 
+                        d.sync(o);
+                    }
+                    requestAnimationFrame(m);
+                }
+                function g() {
+                    if (e) {
+                        u.paused ? e.textContent = "Play" : e.textContent = "Pause";
+                    }
+                }
+                d.ui.update = function(e, t) {
+                    var r = +e.input.value;
+                    d.eq && d.eq.set(t, r), 
+                    q(), 
+                    l && (l.value = "Manual"), 
+                    e.label.textContent = r + " dB";
+                    utils.showStatus('EQ: Banda ' + (t + 1) + ' → ' + r + 'dB', 'info');
+                };
+                if (s) {
+                    s.appendChild(d.ui.el);
+                }
+                u.volume = 0.21; // Establecer volumen al 21%
+                u.addEventListener("play", (function() {
+                    console.log("Audio iniciado - Conectando ecualizador YOuP Enhanced");
+                    if ("suspended" === d.audioCtx.state) {
+                        d.audioCtx.resume();
+                    }
+                    y();
+                    g();
+                    if (d.eq) {
+                        d.eq.use('Dance');
+                        q();
+                        utils.showStatus('🎛️ Ecualizador YOuP Enhanced activado', 'info');
+                    }
+                }), !1);
+                u.addEventListener("pause", (function() {
+                    g();
+                }), !1);
+                if (e) {
+                    e.addEventListener("click", (function() {
+                        u.paused ? u.play() : u.pause();
+                    }), !1);
+                }
+                if (t) {
+                    t.addEventListener("input", (function(e) {
+                        var i = t.files && t.files[0];
+                        t.value = "";
+                        if (i) {
+                            c.src = URL.createObjectURL(i), 
+                            u.src = c.src, 
+                            g();
+                        }
+                    }), !1);
+                }
+                if (a) {
+                    a.addEventListener("click", (function() {
+                        document.body.requestFullscreen();
+                    }), !1);
+                }
+                if (l) {
+                    l.addEventListener("change", (function() {
+                        var e = l.value;
+                        console.log('Cambiando preset a: ' + e);
+                        if (d.eq) {
+                            d.eq.use(e);
+                            q();
+                            if (e === 'Dance') {
+                                DOM.eqToggle.addClass('active');
+                                DOM.frequencyViz.addClass('active');
+                                STATE.equalizerActive = true;
+                                utils.showStatus('🎵 Preset Dance activado', 'info');
+                            } else if (e === 'Default') {
+                                DOM.eqToggle.removeClass('active');
+                                DOM.frequencyViz.removeClass('active');
+                                STATE.equalizerActive = false;
+                                utils.showStatus('🔇 Ecualizador desactivado', 'warning');
+                            } else {
+                                utils.showStatus('🎛️ Preset ' + e + ' aplicado', 'info');
+                            }
+                        }
+                    }), !1);
+                }
+                if (h) {
+                    h.addEventListener("input", (function() {
+                        var e = h.value;
+                        "0" === e ? d.useDraw(f) : "1" === e && d.useDraw(p);
+                        console.log('Modo de visualización: ' + ("0" === e ? 'LineDraw' : 'BarDraw'));
+                    }), !1);
+                }
+                m();
+                console.log('Sistema de ecualizador YOuP V3.0 Enhanced inicializado');
+            })();
+        } else {
+            alert("Tu navegador no soporta AudioContext. Actualiza tu navegador para usar el modulo13 YOuP.");
+        }
+    }));
+    requirejs(["main"]);
+    if (document.getElementById("v")) {
+        document.getElementById("v").volume = 0.21; // Establecer volumen al 21%
+        const myAudio = document.getElementById('v');
+        myAudio.addEventListener('canplaythrough', function() {
+            console.log('Audio listo - Preparando ecualizador Enhanced');
+            const sliders = document.getElementsByClassName('rechancices');
+            for (let i = 0; i < sliders.length; i++) {
+                sliders[i].setAttribute('id', 'eq_slider_' + (i + 1251));
+            }
+            console.log('IDs de sliders configurados:', sliders.length + ' elementos');
+        });
+        myAudio.addEventListener('play', function() {
+            console.log('Primera reproducción - Activando ecualizador YOuP Enhanced');
+            if (!STATE.equalizerActive) {
+                STATE.equalizerActive = true;
+                DOM.frequencyViz.addClass('active');
+                DOM.eqToggle.addClass('active');
+            }
+        }, { once: true });
+    }
+    $(document).ready(function() {
+        DOM.eqToggle.on('click', function() {
+            console.log('Abriendo panel de ecualizador YOuP Enhanced');
+        });
+        $('#exampleModal').on('hidden.bs.modal', function() {
+            console.log('Panel de ecualizador cerrado');
+            const activePreset = $('#combox-equalizer').val();
+            if (activePreset === 'Dance') {
+                utils.showStatus('🎛️ Ecualizador YOuP Enhanced activo', 'info');
+            } else {
+                utils.showStatus('🔇 Ecualizador desactivado', 'warning');
+            }
+        });
+        setTimeout(() => {
+            if (STATE.equalizerActive) {
+                DOM.eqToggle.addClass('active');
+                DOM.frequencyViz.addClass('active');
+                console.log('Estado inicial del ecualizador: ACTIVO');
+            }
+        }, 1000);
+    });
+    console.log('SuperSearch Music V3.0 Enhanced cargado completamente');
+    console.log('Fecha de compilación: 2025-07-22 01:45:07 UTC');
+    console.log('Usuario: xeardiv');
+    console.log('Sistema de ecualizador profesional YOuP Enhanced integrado y funcional');
+    console.log('Características nuevas:');
+    console.log('- Búsquedas minimalistas (3 resultados por tipo)');
+    console.log('- Resaltado de coincidencias en resultados');
+    console.log('- Detección automática de transmisión en vivo vs CDN');
+    console.log('- Indicador visual de antena para transmisión en vivo');
+    console.log('- Álbumes organizados por año');
+    console.log('- Efecto de escritura AI para biografías');
+    console.log('- Mejoras en UX y responsividad');
+  </script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"rayId":"96c921b00db790c1","serverTiming":{"name":{"cfExtPri":true,"cfEdge":true,"cfOrigin":true,"cfL4":true,"cfSpeedBrain":true,"cfCacheStatus":true}},"version":"2025.7.0","token":"938edefedaae4a08a077c8278bdaefb5"}' crossorigin="anonymous"></script>
+</body>
+</html>
+```
