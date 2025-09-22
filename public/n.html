@@ -1,0 +1,1269 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Superbuscador SuperAudio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #000;
+            --bg-secondary: #0a0a0a;
+            --text-primary: #fff;
+            --text-secondary: rgba(255, 255, 255, 0.7);
+            --text-muted: rgba(255, 255, 255, 0.5);
+            --accent: #00d4ff;
+            --accent-hover: #0099cc;
+            --surface: rgba(255, 255, 255, 0.06);
+            --surface-hover: rgba(255, 255, 255, 0.12);
+            --border: rgba(255, 255, 255, 0.1);
+            --error: #ff4757;
+            --success: #2ed573;
+            --warning: #ffa502;
+            --live-color: #ff6b35;
+            --eq-glow: #ff3bf2;
+            --highlight: #ffff00;
+            --max-width: 1100px;
+            --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            --radius: 12px;
+            --radius-sm: 8px;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            --footer-height: 120px;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.5;
+            min-height: 100vh;
+            padding-bottom: var(--footer-height);
+            overflow-x: hidden;
+        }
+        
+        /* Header */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 0;
+        }
+        
+        .header-content {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            padding: 0 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        
+        .logo-img {
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-sm);
+        }
+        
+        .search-container {
+            flex: 1;
+            position: relative;
+            max-width: 600px;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 0.875rem 1.25rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            font-weight: 400;
+            transition: var(--transition);
+        }
+        
+        .search-input:focus {
+            outline: none;
+            background: var(--surface-hover);
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+        }
+        
+        .search-input::placeholder {
+            color: var(--text-muted);
+        }
+        
+        /* Main Content */
+        .main {
+            margin-top: 5rem;
+            min-height: calc(100vh - 5rem - var(--footer-height));
+        }
+        
+        .container {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+        }
+        
+        .welcome {
+            text-align: center;
+            padding: 4rem 1rem;
+        }
+        
+        .welcome h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--text-primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .welcome p {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        
+        /* Player */
+        .player {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid var(--border);
+            padding: 1rem;
+            z-index: 1000;
+        }
+        
+        .player-content {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+            gap: 1.5rem;
+        }
+        
+        .player-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            min-width: 0;
+        }
+        
+        .player-thumb {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: var(--radius-sm);
+            flex-shrink: 0;
+        }
+        
+        .player-details {
+            min-width: 0;
+        }
+        
+        .player-track {
+            font-weight: 600;
+            margin-bottom: 0.125rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .player-artist {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .player-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .player-btn {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            cursor: pointer;
+            padding: 0.75rem;
+            border-radius: 50%;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .player-btn:hover {
+            background: var(--surface);
+            transform: scale(1.1);
+        }
+        
+        .player-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .player-btn.play-pause {
+            background: var(--accent);
+            color: var(--bg-primary);
+            width: 48px;
+            height: 48px;
+        }
+        
+        .player-btn.play-pause:hover {
+            background: var(--accent-hover);
+        }
+        
+        .eq-btn {
+            background: var(--surface);
+            border: none;
+            color: var(--text-primary);
+            padding: 0.5rem;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.8rem;
+            margin-left: 1rem;
+        }
+        
+        .eq-btn:hover {
+            background: var(--surface-hover);
+        }
+        
+        .eq-btn.active {
+            background: var(--eq-glow);
+            color: white;
+            box-shadow: 0 0 10px var(--eq-glow);
+        }
+        
+        .player-progress-section {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            justify-self: end;
+            min-width: 250px;
+        }
+        
+        .player-progress {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .progress-bar {
+            flex: 1;
+            height: 6px;
+            background: var(--surface);
+            border-radius: 3px;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: var(--accent);
+            border-radius: 3px;
+            transition: width 0.1s linear;
+            position: relative;
+        }
+        
+        .progress-handle {
+            position: absolute;
+            right: -6px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 12px;
+            height: 12px;
+            background: var(--accent);
+            border-radius: 50%;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        
+        .progress-bar:hover .progress-handle {
+            opacity: 1;
+        }
+        
+        .progress-time {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            min-width: 40px;
+        }
+        
+        /* Equalizer Visualization */
+        .frequency {
+            position: fixed;
+            bottom: var(--footer-height);
+            left: 0;
+            right: 0;
+            height: 100px;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 999;
+            display: block;
+            border-top: 1px solid var(--border);
+        }
+        
+        .frequency.active {
+            display: block;
+        }
+        
+        #cv {
+            width: 100%;
+            height: 100%;
+            max-width: 1000px;
+            margin: 0 auto;
+            display: block;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        }
+        
+        .trosta {
+            width: 100%;
+            float: left;
+            display: block;
+            height: 210px;
+            background: transparent;
+            padding-top: 10px;
+            text-align: center;
+        }
+        
+        .frequency-labels {
+            position: absolute;
+            bottom: 5px;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 10px;
+            font-size: 9px;
+            color: var(--text-secondary);
+            pointer-events: none;
+        }
+        
+        /* Modal */
+        .modal-content {
+            background: #171717;
+            min-width: 630px;
+            background-position: top left;
+            background-size: 100%;
+            box-shadow: 0 0 400px var(--eq-glow), 0 0 200px rgba(255, 59, 242, .75), 0 0 100px rgba(255, 59, 242, .5), 0 0 50px rgba(255, 59, 242, .35), 0 0 25px rgba(255, 59, 242, .2);
+            color: #ccc;
+            border: 1px solid var(--border);
+        }
+        
+        .modal-header {
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .modal-footer {
+            border-top: 1px solid var(--border);
+        }
+        
+        .btn-close {
+            filter: invert(1);
+        }
+        
+        .form-select {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+        }
+        
+        .form-select:focus {
+            background: var(--surface-hover);
+            border-color: var(--accent);
+            box-shadow: 0 0 0 0.2rem rgba(0, 212, 255, 0.25);
+        }
+        
+        /* Equalizer Sliders */
+        .slide-wrapper {
+            width: 15px;
+            float: left;
+            height: 400px;
+            margin: 15px;
+        }
+        
+        .slide-wrapper input {
+            direction: rtl;
+            appearance: slider-vertical;
+            writing-mode: vertical-lr;
+            background: var(--surface);
+            outline: none;
+        }
+        
+        .slide-wrapper input::-webkit-slider-thumb {
+            appearance: none;
+            width: 15px;
+            height: 15px;
+            background: var(--accent);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        
+        .slide-wrapper .scope {
+            display: block;
+            text-align: center;
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            margin: 5px 0;
+        }
+        
+        /* Status */
+        .status {
+            position: fixed;
+            bottom: 140px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(10, 10, 10, 0.9);
+            color: var(--accent);
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius);
+            font-size: 0.9rem;
+            font-weight: 500;
+            opacity: 0;
+            transition: var(--transition);
+            z-index: 2000;
+            border: 1px solid var(--border);
+        }
+        
+        .status.show {
+            opacity: 1;
+        }
+        
+        .status.error {
+            color: var(--error);
+        }
+        
+        .status.warning {
+            color: var(--warning);
+        }
+        
+        .status.live {
+            color: var(--live-color);
+        }
+        
+        /* Loading */
+        .loading {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            z-index: 1001;
+        }
+        
+        .loading-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent) 0%, #00a8cc 50%, transparent 100%);
+            animation: loading 1.5s infinite;
+        }
+        
+        @keyframes loading {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-content {
+                padding: 0 1rem;
+            }
+            
+            .logo-text {
+                display: none;
+            }
+            
+            .player-content {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+                text-align: center;
+            }
+            
+            .player-progress-section {
+                min-width: 200px;
+            }
+            
+            .modal-content {
+                min-width: auto;
+                margin: 1rem;
+            }
+            
+            .frequency {
+                bottom: 80px;
+                height: 80px;
+            }
+            
+            .trosta {
+                height: 150px;
+            }
+        }
+        
+        /* Loading indicators */
+        .loading-indicator {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 3000;
+            text-align: center;
+        }
+        
+        .loading-indicator.show {
+            display: block;
+        }
+        
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 3px solid var(--surface);
+            border-top: 3px solid var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Ecualizador minimalista */
+        .eq-minimal-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+        }
+        
+        .eq-minimal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .eq-minimal-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        
+        .eq-minimal-controls {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .eq-minimal-toggle {
+            background: var(--surface);
+            color: var(--text-primary);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: var(--transition);
+        }
+        
+        .eq-minimal-toggle.active {
+            background: var(--eq-glow);
+            color: white;
+            box-shadow: 0 0 10px var(--eq-glow);
+        }
+        
+        .eq-minimal-presets {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .eq-minimal-preset {
+            background: var(--surface);
+            color: var(--text-secondary);
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            font-size: 0.7rem;
+            transition: var(--transition);
+        }
+        
+        .eq-minimal-preset.active {
+            background: var(--accent);
+            color: #000;
+        }
+        
+        .eq-minimal-bands {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .eq-minimal-band {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .eq-minimal-band-label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .eq-minimal-band-slider {
+            writing-mode: bt-lr;
+            -webkit-appearance: slider-vertical;
+            width: 100%;
+            height: 100px;
+            background: transparent;
+            outline: none;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+            cursor: pointer;
+        }
+        
+        .eq-minimal-band-slider:hover {
+            opacity: 1;
+        }
+        
+        .eq-minimal-band-value {
+            font-size: 0.7rem;
+            margin-top: 0.5rem;
+            color: var(--text-secondary);
+        }
+        
+        .eq-minimal-viz {
+            width: 100%;
+            height: 80px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .eq-minimal-canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        
+        .eq-minimal-viz-labels {
+            position: absolute;
+            bottom: 5px;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 10px;
+            font-size: 9px;
+            color: var(--text-secondary);
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <a href="#" class="logo" onclick="showWelcome()">
+                <img src="https://superaudio.online/logo.png" alt="SuperSearch" class="logo-img">
+                <span class="logo-text">SuperSearch</span>
+            </a>
+            <div class="search-container">
+                <input 
+                    type="text" 
+                    id="searchInput" 
+                    class="search-input" 
+                    placeholder="Buscar música, artistas o álbumes..." 
+                    autocomplete="off"
+                >
+            </div>
+        </div>
+    </header>
+    
+    <main class="main">
+        <div class="container">
+            <div id="welcome" class="welcome"> 
+                <h1>Superbuscador de SuperAudio</h1>
+                <p>TUS AUDIOS MUSICALES EN SUPERAUDIO, SUPER TRANSFORMA TUS AURIS O PARLANTES. Descubre y reproduce tu música favorita con la mejor tecnología de streaming y mod13 YOuP.</p>
+            </div>
+            
+            <!-- Ecualizador Minimalista Integrado -->
+            <div class="eq-minimal-container">
+                <div class="eq-minimal-header">
+                    <div class="eq-minimal-title">Ecualizador YOuP 13 Bandas</div>
+                    <div class="eq-minimal-controls">
+                        <button class="eq-minimal-toggle active" id="eqToggleMinimal">🎛️ Módulo YouP</button>
+                    </div>
+                </div>
+                
+                <div class="eq-minimal-presets" id="eqPresets">
+                    <div class="eq-minimal-preset active" data-preset="dance">Activo</div>
+                    <div class="eq-minimal-preset" data-preset="default">Apagado</div>
+                    <div class="eq-minimal-preset" data-preset="rock">Rock</div>
+                    <div class="eq-minimal-preset" data-preset="pop">Pop</div>
+                    <div class="eq-minimal-preset" data-preset="classical">Clásica</div>
+                </div>
+                
+                <div class="eq-minimal-bands" id="eqBands">
+                    <!-- Las bandas se generarán con JavaScript -->
+                </div>
+                
+                <div class="eq-minimal-viz">
+                    <canvas class="eq-minimal-canvas" id="eqCanvas"></canvas>
+                    <div class="eq-minimal-viz-labels">
+                        <span>55Hz</span>
+                        <span>89Hz</span>
+                        <span>144Hz</span>
+                        <span>233Hz</span>
+                        <span>377Hz</span>
+                        <span>610Hz</span>
+                        <span>987Hz</span>
+                        <span>1.6KHz</span>
+                        <span>2.6KHz</span>
+                        <span>4.2KHz</span>
+                        <span>6.8KHz</span>
+                        <span>10.9KHz</span>
+                        <span>17.7KHz</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="content"></div>
+        </div>
+    </main>
+    
+    <!-- Player -->
+    <div class="player">
+        <div class="player-content">
+            <div class="player-info">
+                <img id="playerThumb" src="https://via.placeholder.com/50" alt="" class="player-thumb">
+                <div class="player-details">
+                    <div id="playerTrack" class="player-track">Selecciona una canción</div>
+                    <div id="playerArtist" class="player-artist">Artista</div>
+                </div>
+            </div>
+            <div class="player-controls">
+                <button id="prevBtn" class="player-btn" disabled>⏮</button>
+                <button id="playBtn" class="player-btn play-pause">▶</button>
+                <button id="nextBtn" class="player-btn" disabled>⏭</button>
+            </div>
+            <div class="player-progress-section">
+                <div class="player-progress">
+                    <span id="currentTime" class="progress-time">0:00</span>
+                    <div id="progressBar" class="progress-bar">
+                        <div id="progressFill" class="progress-fill">
+                            <div class="progress-handle"></div>
+                        </div>
+                    </div>
+                    <span id="totalTime" class="progress-time">0:00</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Audio Player -->
+    <audio id="audioPlayer"></audio>
+    
+    <!-- Status -->
+    <div id="status" class="status"></div>
+    
+    <!-- Loading -->
+    <div id="loading" class="loading">
+        <div class="loading-bar"></div>
+    </div>
+    
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Configuración
+        const CONFIG = {
+            baseUrl: 'https://ws.audioscrobbler.com/2.0/',
+            apiKey: '8ab04dc41aad7d43deffb0e2ba49b690',
+            defaultImage: 'https://via.placeholder.com/300?text=No+Image',
+            audioEndpoint: 'https://search.superaudio.online/onn/paymentsup/dlocalgo/search/getting.php',
+            liveAudioEndpoint: 'https://youpser.superaudio.online/youpser/gettinglive.php',
+            limits: {
+                artists: 3,
+                albums: 3,
+                tracks: 3
+            }
+        };
+        
+        // Estado
+        const STATE = {
+            isPlaying: false,
+            isEqActive: true,
+            currentPreset: 'dance',
+            audioContext: null,
+            analyser: null,
+            eqFilters: [],
+            dataArray: null,
+            bufferLength: null
+        };
+        
+        // Frecuencias para el ecualizador (secuencia Fibonacci)
+        const frequencies = [55, 89, 144, 233, 377, 610, 987, 1597, 2584, 4181, 6765, 10946, 17711];
+        
+        // Presets del ecualizador
+        const presets = {
+            dance: [8, 5, 3, 3, 1, 3, 3, 3, 3, 3, 8, 8, 13],
+            default: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            rock: [6, 4, 2, 1, -1, 1, 3, 4, 5, 6, 7, 8, 9],
+            pop: [2, 3, 4, 2, 1, 2, 3, 4, 3, 2, 3, 4, 5],
+            classical: [-2, -1, 0, 1, 2, 1, 0, 1, 2, 3, 4, 5, 4]
+        };
+        
+        // Inicializar la aplicación
+        function init() {
+            createBandSliders();
+            setupAudioContext();
+            setupEventListeners();
+            applyPreset('dance');
+            
+            // Ajustar tamaño del canvas
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+            
+            // Iniciar visualización
+            requestAnimationFrame(updateVisualization);
+        }
+        
+        // Crear sliders para cada banda
+        function createBandSliders() {
+            const eqBands = document.getElementById('eqBands');
+            eqBands.innerHTML = '';
+            
+            frequencies.forEach((freq, index) => {
+                const bandDiv = document.createElement('div');
+                bandDiv.className = 'eq-minimal-band';
+                
+                const label = document.createElement('div');
+                label.className = 'eq-minimal-band-label';
+                label.textContent = freq >= 1000 ? `${freq/1000}K` : `${freq}`;
+                
+                const slider = document.createElement('input');
+                slider.type = 'range';
+                slider.className = 'eq-minimal-band-slider';
+                slider.min = '-13';
+                slider.max = '13';
+                slider.value = '0';
+                slider.orient = 'vertical';
+                slider.dataset.index = index;
+                
+                const valueDisplay = document.createElement('div');
+                valueDisplay.className = 'eq-minimal-band-value';
+                valueDisplay.textContent = '0 dB';
+                valueDisplay.id = `value-${index}`;
+                
+                bandDiv.appendChild(label);
+                bandDiv.appendChild(slider);
+                bandDiv.appendChild(valueDisplay);
+                eqBands.appendChild(bandDiv);
+                
+                // Evento para el slider
+                slider.addEventListener('input', function() {
+                    const value = this.value;
+                    document.getElementById(`value-${index}`).textContent = `${value} dB`;
+                    
+                    if (STATE.eqFilters[index]) {
+                        STATE.eqFilters[index].gain.value = parseFloat(value);
+                    }
+                    
+                    // Cambiar a preset manual
+                    document.querySelectorAll('.eq-minimal-preset').forEach(preset => {
+                        preset.classList.remove('active');
+                    });
+                    STATE.currentPreset = 'manual';
+                });
+            });
+        }
+        
+        // Configurar el contexto de audio
+        function setupAudioContext() {
+            try {
+                STATE.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                STATE.analyser = STATE.audioContext.createAnalyser();
+                STATE.analyser.fftSize = 2048;
+                STATE.analyser.smoothingTimeConstant = 0.8;
+                
+                STATE.bufferLength = STATE.analyser.frequencyBinCount;
+                STATE.dataArray = new Uint8Array(STATE.bufferLength);
+                
+                // Crear filtros para el ecualizador
+                createEqFilters();
+                
+                // Conectar el reproductor de audio al analizador
+                const audioPlayer = document.getElementById('audioPlayer');
+                const source = STATE.audioContext.createMediaElementSource(audioPlayer);
+                source.connect(STATE.analyser);
+                
+                // Conectar el analizador a los filtros EQ
+                if (STATE.eqFilters.length > 0) {
+                    source.connect(STATE.eqFilters[0]);
+                    STATE.eqFilters[STATE.eqFilters.length - 1].connect(STATE.audioContext.destination);
+                } else {
+                    source.connect(STATE.audioContext.destination);
+                }
+                
+                showStatus('Ecualizador listo. Selecciona un archivo de audio.');
+            } catch (e) {
+                showStatus('Error al inicializar el ecualizador: ' + e.message, 'error');
+                console.error(e);
+            }
+        }
+        
+        // Crear filtros para el ecualizador
+        function createEqFilters() {
+            STATE.eqFilters = [];
+            
+            frequencies.forEach(freq => {
+                const filter = STATE.audioContext.createBiquadFilter();
+                filter.type = 'peaking';
+                filter.frequency.value = freq;
+                filter.Q.value = 1.0;
+                filter.gain.value = 0;
+                
+                // Conectar con el filtro anterior si existe
+                if (STATE.eqFilters.length > 0) {
+                    STATE.eqFilters[STATE.eqFilters.length - 1].connect(filter);
+                }
+                
+                STATE.eqFilters.push(filter);
+            });
+        }
+        
+        // Aplicar un preset
+        function applyPreset(presetName) {
+            if (!presets[presetName]) return;
+            
+            STATE.currentPreset = presetName;
+            const values = presets[presetName];
+            
+            values.forEach((value, index) => {
+                const slider = document.querySelector(`.eq-minimal-band-slider[data-index="${index}"]`);
+                const valueDisplay = document.getElementById(`value-${index}`);
+                
+                if (slider && valueDisplay) {
+                    slider.value = value;
+                    valueDisplay.textContent = `${value} dB`;
+                    
+                    if (STATE.eqFilters[index]) {
+                        STATE.eqFilters[index].gain.value = value;
+                    }
+                }
+            });
+            
+            // Actualizar preset activo
+            document.querySelectorAll('.eq-minimal-preset').forEach(preset => {
+                if (preset.dataset.preset === presetName) {
+                    preset.classList.add('active');
+                } else {
+                    preset.classList.remove('active');
+                }
+            });
+            
+            showStatus(`Preset aplicado: ${presetName}`);
+        }
+        
+        // Alternar ecualizador
+        function toggleEq() {
+            STATE.isEqActive = !STATE.isEqActive;
+            const eqToggle = document.getElementById('eqToggleMinimal');
+            
+            if (STATE.isEqActive) {
+                eqToggle.classList.add('active');
+                
+                // Reconectar el ecualizador
+                const audioPlayer = document.getElementById('audioPlayer');
+                const source = STATE.audioContext.createMediaElementSource(audioPlayer);
+                source.connect(STATE.analyser);
+                
+                if (STATE.eqFilters.length > 0) {
+                    source.connect(STATE.eqFilters[0]);
+                    STATE.eqFilters[STATE.eqFilters.length - 1].connect(STATE.audioContext.destination);
+                }
+                
+                showStatus('Ecualizador activado');
+            } else {
+                eqToggle.classList.remove('active');
+                
+                // Desconectar el ecualizador
+                const audioPlayer = document.getElementById('audioPlayer');
+                const source = STATE.audioContext.createMediaElementSource(audioPlayer);
+                source.connect(STATE.analyser);
+                source.connect(STATE.audioContext.destination);
+                
+                // Desconectar los filtros
+                STATE.eqFilters.forEach(filter => {
+                    filter.disconnect();
+                });
+                
+                showStatus('Ecualizador desactivado');
+            }
+        }
+        
+        // Mapeo de frecuencias a índices en el array de datos
+        function getFrequencyIndex(freq) {
+            const nyquist = STATE.audioContext.sampleRate / 2;
+            const index = Math.round(freq / nyquist * STATE.bufferLength);
+            return Math.min(index, STATE.bufferLength - 1);
+        }
+        
+        // Obtener índices para las bandas de frecuencia Fibonacci
+        function getFibonacciFrequencyIndices() {
+            return frequencies.map(freq => getFrequencyIndex(freq));
+        }
+        
+        // Actualizar visualización
+        function updateVisualization() {
+            if (!STATE.analyser) {
+                requestAnimationFrame(updateVisualization);
+                return;
+            }
+            
+            STATE.analyser.getByteFrequencyData(STATE.dataArray);
+            
+            // Obtener contexto del canvas
+            const canvas = document.getElementById('eqCanvas');
+            const canvasCtx = canvas.getContext('2d');
+            
+            // Limpiar canvas
+            canvasCtx.fillStyle = 'rgb(5, 5, 15)';
+            canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Dibujar visualización de barras
+            const width = canvas.width;
+            const height = canvas.height;
+            const barWidth = (width / STATE.bufferLength) * 2.5;
+            
+            let x = 0;
+            
+            for (let i = 0; i < STATE.bufferLength; i++) {
+                const value = STATE.dataArray[i];
+                const percent = value / 256;
+                const barHeight = height * percent;
+                
+                // Color basado en la frecuencia (arcoíris)
+                const hue = i / STATE.bufferLength * 360;
+                canvasCtx.fillStyle = `hsla(${hue}, 100%, 60%, 0.7)`;
+                
+                canvasCtx.fillRect(x, height - barHeight, barWidth, barHeight);
+                
+                x += barWidth + 1;
+            }
+            
+            // Dibujar marcadores de bandas Fibonacci
+            drawFibonacciMarkers(canvasCtx, width, height);
+            
+            requestAnimationFrame(updateVisualization);
+        }
+        
+        // Dibujar marcadores para las bandas Fibonacci
+        function drawFibonacciMarkers(ctx, width, height) {
+            const fibIndices = getFibonacciFrequencyIndices();
+            
+            fibIndices.forEach((index, i) => {
+                const x = (index / STATE.bufferLength) * width;
+                const value = STATE.dataArray[index];
+                const barHeight = height * (value / 256);
+                
+                // Dibujar línea vertical destacada
+                ctx.strokeStyle = '#00d4ff';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(x, height - barHeight);
+                ctx.lineTo(x, height);
+                ctx.stroke();
+                
+                // Dibujar punto en la parte superior de la barra
+                ctx.fillStyle = '#ff3bf2';
+                ctx.beginPath();
+                ctx.arc(x, height - barHeight, 4, 0, 2 * Math.PI);
+                ctx.fill();
+                
+                // Mostrar valor de ganancia actual si está disponible
+                if (STATE.eqFilters[i]) {
+                    const gainValue = STATE.eqFilters[i].gain.value;
+                    ctx.fillStyle = gainValue > 0 ? '#00ff00' : '#ff0000';
+                    ctx.font = '10px Arial';
+                    ctx.fillText(`${gainValue}dB`, x - 10, height - barHeight - 10);
+                }
+            });
+        }
+        
+        // Ajustar tamaño del canvas
+        function resizeCanvas() {
+            const canvas = document.getElementById('eqCanvas');
+            canvas.width = canvas.clientWidth;
+            canvas.height = canvas.clientHeight;
+        }
+        
+        // Formatear tiempo (segundos a MM:SS)
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+        
+        // Mostrar mensaje de estado
+        function showStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = 'status';
+            
+            if (type === 'error') {
+                status.classList.add('error');
+            } else if (type === 'warning') {
+                status.classList.add('warning');
+            } else if (type === 'live') {
+                status.classList.add('live');
+            }
+            
+            status.classList.add('show');
+            
+            setTimeout(() => {
+                status.classList.remove('show');
+            }, 3000);
+        }
+        
+        // Configurar event listeners
+        function setupEventListeners() {
+            // Toggle ecualizador
+            document.getElementById('eqToggleMinimal').addEventListener('click', toggleEq);
+            
+            // Selectores de preset
+            document.querySelectorAll('.eq-minimal-preset').forEach(preset => {
+                preset.addEventListener('click', function() {
+                    applyPreset(this.dataset.preset);
+                });
+            });
+            
+            // Botones del reproductor
+            const audioPlayer = document.getElementById('audioPlayer');
+            const playBtn = document.getElementById('playBtn');
+            
+            playBtn.addEventListener('click', () => {
+                if (audioPlayer.paused) {
+                    audioPlayer.play();
+                    playBtn.textContent = '⏸';
+                    STATE.isPlaying = true;
+                    
+                    // Reanudar contexto de audio si está suspendido
+                    if (STATE.audioContext && STATE.audioContext.state === 'suspended') {
+                        STATE.audioContext.resume();
+                    }
+                } else {
+                    audioPlayer.pause();
+                    playBtn.textContent = '▶';
+                    STATE.isPlaying = false;
+                }
+            });
+            
+            // Barra de progreso
+            const progressContainer = document.getElementById('progressBar');
+            
+            progressContainer.addEventListener('click', (e) => {
+                const rect = progressContainer.getBoundingClientRect();
+                const percent = (e.clientX - rect.left) / rect.width;
+                audioPlayer.currentTime = percent * audioPlayer.duration;
+            });
+            
+            // Actualizar barra de progreso
+            audioPlayer.addEventListener('timeupdate', () => {
+                const progress = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+                document.getElementById('progressFill').style.width = `${progress}%`;
+                document.getElementById('currentTime').textContent = formatTime(audioPlayer.currentTime);
+                
+                if (!isNaN(audioPlayer.duration)) {
+                    document.getElementById('totalTime').textContent = formatTime(audioPlayer.duration);
+                }
+            });
+            
+            // Cuando el audio termina
+            audioPlayer.addEventListener('ended', () => {
+                playBtn.textContent = '▶';
+                STATE.isPlaying = false;
+                document.getElementById('progressFill').style.width = '0%';
+                document.getElementById('currentTime').textContent = '0:00';
+                showStatus('Reproducción finalizada');
+            });
+            
+            // Reproducción de audio
+            audioPlayer.addEventListener('play', function() {
+                showStatus('Reproduciendo...');
+            });
+            
+            audioPlayer.addEventListener('pause', function() {
+                showStatus('Pausado');
+            });
+            
+            audioPlayer.addEventListener('error', function() {
+                showStatus('Error al reproducir el archivo', 'error');
+            });
+            
+            // Cargar archivo de audio de ejemplo para demostración
+            const demoAudio = new Audio();
+            demoAudio.src = 'https://assets.codepen.io/4358584/your_audio.mp3'; // Reemplazar con URL real
+            demoAudio.addEventListener('canplaythrough', () => {
+                document.getElementById('audioPlayer').src = demoAudio.src;
+                showStatus('Audio de demostración cargado');
+            });
+        }
+        
+        // Iniciar cuando el documento esté listo
+        document.addEventListener('DOMContentLoaded', init);
+        
+        // Función para mostrar la página de bienvenida
+        function showWelcome() {
+            document.getElementById('welcome').style.display = 'block';
+            document.getElementById('content').innerHTML = '';
+        }
+        
+        // Mostrar mensaje de inicialización
+        showStatus('SuperSearch Music V3.0 Enhanced inicializado');
+        console.log('SuperSearch Music V3.0 Enhanced cargado completamente');
+    </script>
+</body>
+</html>
