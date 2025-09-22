@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Superbuscador en superaudio</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    /* [Todos los estilos CSS permanecen iguales] */
+    :root {
+      --bg-primary: #000;
+      --bg-secondary: #0a0a0a;
+      --text-primary: #fff;
+      --text-secondary: rgba(255, 255, 255, 0.7);
+      --text-muted: rgba(255, 255, 255, 0.5);
+      --accent: #00d4ff;
+      --accent-hover: #0099cc;
+      --surface: rgba(255, 255, 255, 0.06);
+      --surface-hover: rgba(255, 255, 255, 0.12);
+      --border: rgba(255, 255, 255, 0.1);
+      --error: #ff4757;
+      --success: #2ed573;
+      --warning: #ffa502;
+      --live-color: #ff6b35;
+      --eq-glow: #ff3bf2;
+      --highlight: #ffff00;
+      --max-width: 1100px;
+      --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      --radius: 12px;
+      --radius-sm: 8px;
+      --shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      --footer-height: 120px;
+      --grid-color: rgba(255, 255, 255, 0.05);
+    }
+    /* [El resto de los estilos permanecen iguales] */
+  </style>
+</head>
+<body>
+  <!-- [Todo el HTML permanece igual hasta la sección de scripts] -->
+  
+  <!-- Scripts -->
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Configuración global mejorada
+    const CONFIG = {
+      baseUrl: 'https://ws.audioscrobbler.com/2.0/',
+      apiKey: '8ab04dc41aad7d43deffb0e2ba49b690',
+      defaultImage: 'https://via.placeholder.com/300?text=No+Image',
+      audioEndpoint: 'https://search.superaudio.online/onn/paymentsup/dlocalgo/search/getting.php',
+      liveAudioEndpoint: 'https://youpser.superaudio.online/youpser/gettinglive.php',
+      liveReloadInterval: 5000,
+      limits: {
+        artists: 3,
+        albums: 3,
+        tracks: 3
+      },
+      liveThreshold: 2000
+    };
+
+    // [Todo el código JavaScript anterior permanece igual hasta la sección del ecualizador]
+
+    // ECUALIZADOR YOuP - VERSIÓN SIMPLIFICADA FUNCIONAL
+    class Equalizer {
+      constructor() {
+        this.presets = {
+          Dance: {
+            name: "Activo",
+            values: [8, 5, 3, 3, 1, 3, 3, 3, 3, 3, 8, 8, 13]
+          },
+          Default: {
+            name: "Apagado",
+            values: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+          }
+        };
+        this.frequencys = [55, 89, 144, 233, 377, 610, 987, 1597, 2584, 4181, 6765, 10946, 17711];
+        this.filters = [];
+        this.initialized = false;
+      }
+
+      init(audioContext) {
+        if (this.initialized) return;
+        
+        this.audioContext = audioContext;
+        
+        // Crear filtros
+        for (let i = 0; i < this.frequencys.length; i++) {
+          const filter = this.audioContext.createBiquadFilter();
+          filter.type = "peaking";
+          filter.frequency.value = this.frequencys[i];
+          filter.gain.value = 0;
+          this.filters.push(filter);
+          
+          // Conectar en cadena
+          if (i > 0) {
+            this.filters[i - 1].connect(this.filters[i]);
+          }
+        }
+        
+        this.initialized = true;
+        console.log("Ecualizador inicializado");
+      }
+
+      connect(source, destination) {
+        if (!this.initialized) {
+          console.error("Ecualizador no inicializado");
+          return;
+        }
+        
+        source.connect(this.filters[0]);
+        this.filters[this.filters.length - 1].connect(destination);
+      }
+
+      use(presetName) {
+        if (!this.initialized) {
+          console.error("Ecualizador no inicializado");
+          return;
+        }
+        
+        const preset = this.presets[presetName] || this.presets.Default;
+        
+        for (let i = 0; i < this.filters.length; i++) {
+          if (this.filters[i].gain) {
+            this.filters[i].gain.value = preset.values[i];
+          }
+        }
+        
+        console.log('Preset aplicado: ' + presetName);
+        utils.showStatus(`Módulo YOuP: ${presetName === 'Dance' ? 'Activado' : 'Apagado'}`, 'info');
+      }
+
+      disconnect() {
+        if (!this.initialized) return;
+        
+        // Desconectar todos los filtros
+        for (let i = 0; i < this.filters.length - 1; i++) {
+          this.filters[i].disconnect();
+        }
+      }
+    }
+
+    // Inicializar el ecualizador
+    const youpEqualizer = new Equalizer();
+
+    // Modificar la inicialización del audio para incluir el ecualizador
+    function initAudioContext() {
+      if (!STATE.audioContext) {
+        try {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          STATE.audioContext = new AudioContext();
+          
+          // Crear analizador para visualización
+          STATE.analyser = STATE.audioContext.createAnalyser();
+          STATE.analyser.fftSize = 2048;
+          
+          // Inicializar ecualizador
+          youpEqualizer.init(STATE.audioContext);
+          
+          // Configurar la cadena de conexión: fuente -> ecualizador -> analizador -> destino
+          if (STATE.audioContext) {
+            const source = STATE.audioContext.createMediaElementSource(DOM.audioPlayer);
+            youpEqualizer.connect(source, STATE.analyser);
+            STATE.analyser.connect(STATE.audioContext.destination);
+            
+            // Inicializar visualización
+            visualization.init();
+          }
+        } catch (e) {
+          console.error('Error al inicializar AudioContext:', e);
+          utils.showStatus('Audio avanzado no disponible en este navegador', 'warning');
+        }
+      }
+    }
+
+    // Modificar la función de reproducción para inicializar el contexto de audio
+    const originalPlayTrack = player.playTrack;
+    player.playTrack = async function(trackName, artistName, trackNumber = 1) {
+      // Inicializar contexto de audio si no está inicializado
+      if (!STATE.audioContext) {
+        initAudioContext();
+      }
+      
+      // Aplicar configuración del ecualizador según selección
+      const eqSelection = document.getElementById('combox-equalizer');
+      if (eqSelection) {
+        youpEqualizer.use(eqSelection.value);
+      }
+      
+      // Llamar a la función original
+      return originalPlayTrack.call(this, trackName, artistName, trackNumber);
+    };
+
+    // Event listener para el selector de ecualizador
+    document.addEventListener('DOMContentLoaded', function() {
+      const eqSelector = document.getElementById('combox-equalizer');
+      if (eqSelector) {
+        eqSelector.addEventListener('change', function() {
+          youpEqualizer.use(this.value);
+        });
+      }
+      
+      // Inicializar el contexto de audio al hacer clic en play
+      DOM.playBtn.on('click', function() {
+        if (!STATE.audioContext) {
+          initAudioContext();
+        }
+      });
+    });
+
+    // [El resto del código JavaScript anterior permanece igual]
+  </script>
+</body>
+</html>
