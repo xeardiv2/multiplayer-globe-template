@@ -1,0 +1,35 @@
+# Documentación Técnica del Backend - SuperAudio
+**Autor:** Diviasi Ale  
+**Versión:** 1.0  
+**Fecha:** 5 de abril de 2025  
+**Idioma:** Español
+
+---
+
+## Índice
+1. [Introducción y Arquitectura General](#1-introducción-y-arquitectura-general)
+2. [Tecnologías Utilizadas](#2-tecnologías-utilizadas)
+3. [Documentación de la API REST](#3-documentación-de-la-api-rest)
+4. [Flujo de Datos](#4-flujo-de-datos)
+5. [Autenticación y Seguridad](#5-autenticación-y-seguridad)
+6. [Estrategia de Entrega de Contenido](#6-estrategia-de-entrega-de-contenido)
+7. [Escalabilidad y Optimización](#7-escalabilidad-y-optimización)
+8. [Recomendaciones Finales](#8-recomendaciones-finales)
+
+---
+
+## 1. Introducción y Arquitectura General
+
+SuperAudio es una plataforma de streaming de audio especializada en contenido de alta fidelidad (FLAC) y experiencias inmersivas. El backend gestiona usuarios, catálogo de contenido, personalización, suscripciones y la entrega segura de archivos de audio.
+
+La arquitectura combina servicios en la nube (AWS) con una red de borde (Cloudflare) para ofrecer rendimiento, seguridad y escalabilidad.
+
+### Diagrama de Arquitectura
+
+```mermaid
+graph TD
+    A[Frontend<br>superaudio.online] --> B[API Backend<br>datab.superaudio.online]
+    B --> C[Base de Datos<br>MySQL en AWS RDS]
+    B --> D[Cloudflare Worker]
+    D --> E[Bucket Privado<br>R2/S3 - Archivos FLAC]
+    F[Usuario] --> A
