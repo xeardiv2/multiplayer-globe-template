@@ -1,117 +1,370 @@
-body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f7f6;
-    color: #333;
-    padding: 20px;
-    margin: 0;
-}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SUPERaudio YOuP: Pitch Ejecutivo - Disrupción en Audio</title>
+    <style>
+        /* ===================================================================
+           ESTILOS CSS: PALETA NEÓN Y DISEÑO PROFESIONAL
+           =================================================================== */
+        :root {
+            --color-primary: #000000;
+            --color-accent-blue: #00d4ff; /* Azul eléctrico */
+            --color-accent-pink: #ff3bf2; /* Rosa neón */
+            --color-text-light: #ffffff;
+            --font-family-title: 'Arial Black', sans-serif; 
+            --font-family-body: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
 
-h1, h2 {
-    text-align: center;
-    color: #007bff;
-}
+        /* Estilos Generales */
+        body {
+            font-family: var(--font-family-body);
+            background-color: var(--color-primary);
+            color: var(--color-text-light);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
 
-/* Estilo general para contenedores de tabla y gráfico */
-.table-container, .chart-container {
-    margin: 20px auto;
-    padding: 20px;
-    background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    max-width: 900px;
-}
+        /* Estilo de Diapositiva */
+        .slide {
+            min-height: 100vh;
+            padding: 80px 10%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            border-bottom: 2px solid rgba(0, 212, 255, 0.2);
+            box-sizing: border-box;
+            background: radial-gradient(circle at top left, rgba(0, 0, 0, 0.4) 0%, var(--color-primary) 70%);
+        }
+        
+        /* Títulos */
+        h1, h2 {
+            font-family: var(--font-family-title);
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+        }
 
-/* Estilos de la tabla */
-table {
-    width: 100%;
-    border-collapse: collapse; /* Colapsa los bordes para un look limpio */
-    margin: 20px 0;
-    text-align: left;
-}
+        .neon-text {
+            background-image: linear-gradient(45deg, var(--color-accent-blue), var(--color-accent-pink));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            font-size: 3.5rem;
+            line-height: 1.1;
+        }
 
-caption {
-    font-weight: bold;
-    font-size: 1.2em;
-    margin-bottom: 10px;
-    color: #555;
-}
+        .slide h2 {
+            font-size: 2.5rem;
+            color: var(--color-accent-blue);
+        }
 
-th, td {
-    border: 1px solid #ddd;
-    padding: 12px 15px;
-}
+        .slide h3 {
+            font-size: 1.8rem;
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
 
-thead th {
-    background-color: #007bff;
-    color: white;
-    text-align: center;
-}
+        /* Listas y Elementos de Énfasis */
+        .slide ul {
+            list-style: none;
+            padding-left: 0;
+            font-size: 1.2rem;
+        }
 
-/* Rayas de cebra para mejor legibilidad */
-tbody tr:nth-child(even) {
-    background-color: #f2f2f2;
-}
+        .slide ul li {
+            margin-bottom: 15px;
+            padding-left: 30px;
+            position: relative;
+        }
 
-/* Efecto al pasar el cursor */
-tbody tr:hover {
-    background-color: #e6f7ff;
-    cursor: default;
-}
+        .slide ul li::before {
+            content: '•';
+            color: var(--color-accent-pink);
+            font-size: 1.5rem;
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
 
-/* Estilos para resaltar los datos de costo */
-.cf-cost {
-    background-color: #ffe6e6; /* Rojo claro para Cloudflare (Pay as you go) */
-}
+        .icon {
+            font-size: 1.5rem;
+            color: var(--color-accent-pink);
+            margin-right: 10px;
+        }
 
-.youp-cost {
-    background-color: #e6ffe6; /* Verde claro para Youp (Costo fijo) */
-    font-weight: bold;
-}
+        .key-metric {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--color-accent-blue);
+            display: block;
+            margin-top: 15px;
+            text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+        }
 
-.cf-cost-highlight {
-    background-color: #ffcccc; /* Rojo más fuerte para altos costos */
-    font-weight: bold;
-    color: #cc0000;
-}
+        /* Tablas */
+        .comparison-table {
+            width: 100%;
+            max-width: 800px;
+            border-collapse: collapse;
+            margin-top: 20px;
+            text-align: left;
+        }
 
-.youp-cost-highlight {
-    background-color: #cce6cc;
-    font-weight: bold;
-    color: #006600;
-}
+        .comparison-table th, .comparison-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+        }
 
-/* Estilos para el pie de la tabla */
-tfoot td {
-    background-color: #e9ecef;
-    font-style: italic;
-    text-align: center;
-}
+        .comparison-table th {
+            color: var(--color-accent-blue);
+            background-color: rgba(0, 212, 255, 0.1);
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        
+        /* Contacto */
+        .contact-info a {
+            color: var(--color-accent-pink);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        .contact-info a:hover {
+            color: var(--color-accent-blue);
+        }
 
-/* Estilos del Gráfico */
-#costChart {
-    max-height: 400px; /* Limita la altura del canvas */
-}
+        /* Slide 1 - Portada específica */
+        #slide-1 {
+            text-align: center;
+        }
 
-.chart-info {
-    text-align: center;
-    margin-top: 15px;
-    padding: 10px;
-    border-left: 5px solid #007bff;
-    background-color: #f0f8ff;
-}
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .slide {
+                padding: 40px 5%;
+            }
+            .neon-text {
+                font-size: 2.5rem;
+            }
+            .slide h2 {
+                font-size: 1.8rem;
+            }
+            .key-metric {
+                font-size: 1.5rem;
+            }
+            .slide ul {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
 
-/* Media Query para Responsividad en móviles */
-@media (max-width: 600px) {
-    /* Las tablas no se colapsan bien, usamos un contenedor de scroll */
-    .table-container {
-        overflow-x: auto;
-    }
+<section id="slide-1" class="slide">
+    <span class="icon">🎵</span>
+    <h1 class="neon-text">SUPERaudio YOuP</h1>
+    <p>REVOLUCIÓN EN STREAMING DE AUDIO</p>
+    <ul>
+        <li>**Ecualizador 13 Bandas Fibonacci**</li>
+        <li>**Democratización del Audio Hi-Fi**</li>
+        <li>**Modelo Freemium Sostenible & CERO EGRESO**</li>
+    </ul>
+    <p style="font-size: 1rem; margin-top: 50px;">[Logo Superaudio] - [Fecha]</p>
+</section>
 
-    table {
-        min-width: 600px; /* Asegura que la tabla tenga ancho para hacer scroll */
-    }
+<section id="slide-2" class="slide">
+    <h2 style="color: var(--color-accent-pink);">❌ PROBLEMA ACTUAL:</h2>
+    <h3 style="font-size: 1.8rem;">"El audio de alta calidad es elitista y COSTOSO"</h3>
+    <ul>
+        <li><span class="icon">•</span> Equipo especializado: **$500 - $5,000+**</li>
+        <li><span class="icon">•</span> Formatos lossless: **Alto costo de ancho de banda (Egress)**.</li>
+        <li><span class="icon">•</span> Accesibilidad: Limitada a audiófilos y ciudades con alta conectividad.</li>
+        <li><span class="icon">•</span> Costo usuario: **$15-20/mes** adicionales.</li>
+    </ul>
+    <h2 style="margin-top: 40px;"><span class="icon">📊</span> MERCADO NO ATENDIDO:</h2>
+    <span class="key-metric" style="color: var(--color-accent-pink);">85% de usuarios no pueden acceder a audio premium de forma sostenible</span>
+</section>
 
-    h1 {
-        font-size: 1.5em;
-    }
-}
+<section id="slide-3" class="slide">
+    <h2><span class="icon">🎵</span> SOLUCIÓN INNOVADORA:</h2>
+    <h3 style="font-size: 1.8rem;">"Audio que suena perfecto, sin costo perfecto"</h3>
+    <h3 style="margin-top: 30px; color: var(--color-accent-blue);">Tecnología Propietaria (Doble Impacto):</h3>
+    <ul>
+        <li><span class="icon">•</span> **Ecualizador 13 Bandas Fibonacci** ($\phi = 1.618$).</li>
+        <li><span class="icon">•</span> Procesamiento en el **Edge de Cloudflare (Egress CERO)**.</li>
+        <li><span class="icon">•</span> Compatibilidad universal (Web Audio API).</li>
+        <li>✅ **Calidad Percibida: 192kHz/24bits** con archivos ligeros.</li>
+    </ul>
+    <span class="key-metric" style="margin-top: 40px; color: var(--color-accent-blue);">✅ Democratización real del audio calidad + CERO Costo Marginal de Ancho de Banda</span>
+</section>
+
+<section id="slide-4" class="slide">
+    <h2><span class="icon">🎛️</span> ARQUITECTURA FIBONACCI:</h2>
+    <p style="font-size: 1.1rem; color: var(--color-accent-pink); line-height: 1.8;">
+        Frecuencias: **55Hz** → 89Hz → 144Hz → ... → 10.9KHz → **17.7KHz**
+    </p>
+
+    <h3 style="margin-top: 40px;">Diferencial CLAVE: Eficiencia de Red y Control</h3>
+    <ul>
+        <li><span class="icon">•</span> **Ultra-Light Mode:** Ofrecemos opcionalmente un MP4 **96% más liviano** para ahorro de datos.</li>
+        <li><span class="icon">•</span> **Egress CERO:** El módulo EQ se aplica en el Edge, eliminando costos de egreso de datos.</li>
+        <li><span class="icon">•</span> **Módulo Opcional:** El usuario puede **activar/desactivar** YOuP para escuchar la mezcla "plana" (neutralizando la objeción purista).</li>
+    </ul>
+    <span class="key-metric" style="color: var(--color-accent-pink); margin-top: 30px;">🏆 DOBLE VENTANA: Base Matemática Natural Y CERO Costo de Ancho de Banda.</span>
+</section>
+
+<section id="slide-5" class="slide">
+    <h2><span class="icon">🎧</span> CALIDAD PERCIBIDA (Escala 1-10):</h2>
+    <table class="comparison-table">
+        <tr><th>Fuente de Audio</th><th>Puntuación</th></tr>
+        <tr><td>MP3 320kbps</td><td>7.1</td></tr>
+        <tr><td>FLAC + equipo básico</td><td>8.1</td></tr>
+        <tr style="color: var(--color-accent-pink);"><td>**MP4 Ligero + YOuP (Modo Ahorro)**</td><td>**8.9 🚀**</td></tr>
+        <tr style="color: var(--color-accent-pink);"><td>**FLAC + YOuP (Modo Premium)**</td><td>**9.9 🏆**</td></tr>
+    </table>
+    <h3 style="margin-top: 40px; color: var(--color-accent-blue);">💡 CONCLUSIÓN:</h3>
+    <p style="font-size: 1.2rem;">YOuP mejora cualquier fuente de audio sin requerir inversión en equipo, **incluso en modo ultra-ligero (96% de ahorro)**.</p>
+</section>
+
+<section id="slide-6" class="slide">
+    <h2><span class="icon">💰</span> ESTRUCTURA FREEMIUM:</h2>
+    <table class="comparison-table">
+        <tr><th>USUARIO FREE ($0/mes)</th><th>USUARIO PREMIUM ($2.55/mes)</th></tr>
+        <tr><td>• Adsense: $0.85/user</td><td>• Sin anuncios</td></tr>
+        <tr><td>• YOuP EQ + Modo Ahorro incluido</td><td>• Audio + YOuP (Full Quality)</td></tr>
+        <tr style="color: var(--color-accent-pink);"><td>• Retención **↑ 25%**</td><td>• Conversión **↑ 88%**</td></tr>
+    </table>
+    <h3 style="margin-top: 40px; color: var(--color-accent-pink);">🎯 PROYECCIÓN AÑO 1:</h3>
+    <ul>
+        <li><span class="icon">•</span> **10,000 usuarios** (80% free / 20% premium)</li>
+        <li><span class="icon">•</span> Ingreso mensual: **$6,885**</li>
+        <li><span class="icon">•</span> Neto: **$2,685/mes**</li>
+    </ul>
+</section>
+
+<section id="slide-7" class="slide">
+    <h2><span class="icon">⚔️</span> POSICIONAMIENTO EN MERCADO:</h2>
+    <table class="comparison-table">
+        <tr><th>Plataforma</th><th>Foco Principal</th><th>Costo/Eficiencia</th></tr>
+        <tr><td>Spotify</td><td>EQ Básico / Hi-Fi Adicional</td><td>Alto Egreso de Red</td></tr>
+        <tr><td>Tidal</td><td>Lossless / Purismo</td><td>Muy Alto Egreso de Red</td></tr>
+        <tr style="color: var(--color-accent-blue);"><td>**Superaudio**</td><td>**YOuP ÚNICO / Mejora Audio**</td><td>**CERO Egreso de Red**</td></tr>
+    </table>
+    <h3 style="margin-top: 40px; color: var(--color-accent-blue);">🎯 DIFERENCIADORES CLAVE:</h3>
+    <ul>
+        <li><span class="icon">•</span> **Zero Egress (Cloudflare Edge):** Ahorro masivo en costos de *hosting* (AWS2, etc.).</li>
+        <li><span class="icon">•</span> **Ultra-Light Mode:** MP4 96% más ligero. Atrae mercados emergentes.</li>
+        <li><span class="icon">•</span> **Control Opcional:** El módulo YOuP se puede desactivar (respeta purismo).</li>
+        <li><span class="icon">•</span> Tecnología patentable y base científica (Fibonacci).</li>
+    </ul>
+</section>
+
+<section id="slide-8" class="slide">
+    <h2><span class="icon">🚀</span> CRONOGRAMA EJECUTIVO:</h2>
+    <h3 style="color: var(--color-accent-blue);">FASE 1 (Mes 1-3):</h3>
+    <ul>
+        <li>✅ Migración base de datos AWS2</li>
+        <li>✅ **Implementación YOuP y Cloudflare Edge**</li>
+        <li>✅ Integración Paddle.com pagos</li>
+    </ul>
+    <h3 style="color: var(--color-accent-pink);">FASE 2 (Mes 4-6):</h3>
+    <ul>
+        <li>🔄 Perfiles por género musical</li>
+        <li>🔄 Sync entre dispositivos</li>
+        <li>🔄 Optimización mobile y modo Ahorro por defecto</li>
+    </ul>
+    <h3 style="color: var(--color-accent-blue);">FASE 3 (Mes 7-12):</h3>
+    <ul>
+        <li>🔮 **IA para optimización automática**</li>
+        <li>🔮 Integración con metadata</li>
+        <li>🔮 Expansión internacional (Mercados emergentes con baja conectividad)</li>
+    </ul>
+</section>
+
+<section id="slide-9" class="slide">
+    <h2><span class="icon">📊</span> ESCENARIO CONSERVADOR:</h2>
+    <table class="comparison-table">
+        <tr><th>Métrica</th><th>AÑO 1</th><th>AÑO 2</th></tr>
+        <tr><td>Usuarios</td><td>10,000</td><td>50,000</td></tr>
+        <tr><td>Ingreso Mensual</td><td>$6,885</td><td>$43,605</td></tr>
+        <tr><td>Costos Mensuales</td><td>$4,200</td><td>$12,500 (¡Con EGRESS CERO!)</td></tr>
+        <tr style="color: var(--color-accent-pink);"><td>**Neto Mensual**</td><td>**$2,685**</td><td>**$31,105**</td></tr>
+    </table>
+    <ul style="margin-top: 30px;">
+        <li style="color: var(--color-accent-pink);">📈 LTV AUMENTO: **45%** (Impulsado por YOuP)</li>
+        <li style="color: var(--color-accent-blue);">🔄 CHURN REDUCCIÓN: **33%** (Impulsado por Ahorro de Datos)</li>
+    </ul>
+</section>
+
+<section id="slide-10" class="slide">
+    <h2 style="color: var(--color-accent-pink);">🎵 CITA CLAVE:</h2>
+    <h3 class="neon-text" style="font-size: 2.5rem; text-transform: none;">"NO SE NECESITA AUDIO PERFECTO,<br>SE NECESITA AUDIO QUE SUENE PERFECTO"</h3>
+    <h3 style="margin-top: 40px; color: var(--color-accent-blue);">VENTAJAS ESTRATÉGICAS:</h3>
+    <ul>
+        <li><span class="icon">💸</span> **Económico (Inversor):** Cero costo marginal por egreso.</li>
+        <li><span class="icon">🌍</span> **Accesible (Usuario):** MP4 96% más liviano en cualquier dispositivo.</li>
+        <li><span class="icon">🎨</span> **Control Total:** Módulo YOuP **opcional** (EQ + Ahorro).</li>
+        <li><span class="icon">🔬</span> **Disrupción Técnica:** Ecualización Fibonacci + Edge Computing.</li>
+    </ul>
+</section>
+
+<section id="slide-11" class="slide">
+    <h2><span class="icon">🤝</span> EQUIPO LÍDER:</h2>
+    <div style="margin-top: 20px;">
+        <p style="font-size: 1.5rem; color: var(--color-accent-pink);">• **Alejandro Diviasi - CTO**</p>
+        <ul style="font-size: 1rem;">
+            <li>+ 15 años experiencia audio digital</li>
+            <li>+ Especialista Web Audio API y Edge Computing</li>
+        </ul>
+    </div>
+    <h3 style="margin-top: 40px; color: var(--color-accent-blue);">🏆 LOGROS ACTUALES:</h3>
+    <ul>
+        <li><span class="icon">•</span> Backend completo y funcional</li>
+        <li><span class="icon">•</span> Frontend React/Next.js optimizado</li>
+        <li><span class="icon">•</span> **Arquitectura Cloudflare Edge escalable y Zero Egress**</li>
+    </ul>
+</section>
+
+<section id="slide-12" class="slide">
+    <h2><span class="icon">🔮</span> VISIÓN ESTRATÉGICA:</h2>
+    <h3 style="color: var(--color-accent-pink);">CORTO PLAZO (1-2 años):</h3>
+    <ul>
+        <li>Líder en ecualización web</li>
+        <li>100,000 usuarios activos</li>
+        <li>**Expansión Latinoamérica (Impulsada por ahorro de datos)**</li>
+    </ul>
+    <h3 style="color: var(--color-accent-blue);">LARGO PLAZO (5 años):</h3>
+    <ul>
+        <li>Estándar industria ecualización web</li>
+        <li>API pública para desarrolladores</li>
+        <li>**Tecnología de referencia en audio/streaming de baja latencia y bajo costo**</li>
+    </ul>
+</section>
+
+<section id="slide-13" class="slide" style="text-align: center;">
+    <h1 class="neon-text">SUPERaudio YOuP</h1>
+    <h3 style="font-size: 1.8rem;">"Democratizando el Audio de Calidad y el Costo Operacional"</h3>
+
+    <h3 style="margin-top: 40px; color: var(--color-accent-blue);">📊 RESUMEN EJECUTIVO:</h3>
+    <ul style="display: inline-block; text-align: left;">
+        <li><span class="icon">•</span> Tecnología única: 13 Bandas Fibonacci</li>
+        <li><span class="icon">•</span> Modelo **Zero Egress / MP4 96% más liviano**</li>
+        <li><span class="icon">•</span> Mercado validado: 85% no atendido</li>
+    </ul>
+    
+    <div class="contact-info" style="margin-top: 50px;">
+        <p><span class="icon">📧</span> Contacto: <a href="mailto:[email]">[email]</a></p>
+        <p><span class="icon">🌐</span> Web: <a href="https://superaudio.online" target="_blank">superaudio.online</a></p>
+        <p><span class="icon">📱</span> Demo: <a href="[link demostración]">[link demostración]</a></p>
+    </div>
+
+    <span class="key-metric" style="color: var(--color-accent-pink); margin-top: 40px;">🚀 "Invierta en el futuro del audio y la eficiencia de la red"</span>
+</section>
+
+</body>
+</html>
