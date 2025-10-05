@@ -1,0 +1,117 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f7f6;
+    color: #333;
+    padding: 20px;
+    margin: 0;
+}
+
+h1, h2 {
+    text-align: center;
+    color: #007bff;
+}
+
+/* Estilo general para contenedores de tabla y gráfico */
+.table-container, .chart-container {
+    margin: 20px auto;
+    padding: 20px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    max-width: 900px;
+}
+
+/* Estilos de la tabla */
+table {
+    width: 100%;
+    border-collapse: collapse; /* Colapsa los bordes para un look limpio */
+    margin: 20px 0;
+    text-align: left;
+}
+
+caption {
+    font-weight: bold;
+    font-size: 1.2em;
+    margin-bottom: 10px;
+    color: #555;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 12px 15px;
+}
+
+thead th {
+    background-color: #007bff;
+    color: white;
+    text-align: center;
+}
+
+/* Rayas de cebra para mejor legibilidad */
+tbody tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+/* Efecto al pasar el cursor */
+tbody tr:hover {
+    background-color: #e6f7ff;
+    cursor: default;
+}
+
+/* Estilos para resaltar los datos de costo */
+.cf-cost {
+    background-color: #ffe6e6; /* Rojo claro para Cloudflare (Pay as you go) */
+}
+
+.youp-cost {
+    background-color: #e6ffe6; /* Verde claro para Youp (Costo fijo) */
+    font-weight: bold;
+}
+
+.cf-cost-highlight {
+    background-color: #ffcccc; /* Rojo más fuerte para altos costos */
+    font-weight: bold;
+    color: #cc0000;
+}
+
+.youp-cost-highlight {
+    background-color: #cce6cc;
+    font-weight: bold;
+    color: #006600;
+}
+
+/* Estilos para el pie de la tabla */
+tfoot td {
+    background-color: #e9ecef;
+    font-style: italic;
+    text-align: center;
+}
+
+/* Estilos del Gráfico */
+#costChart {
+    max-height: 400px; /* Limita la altura del canvas */
+}
+
+.chart-info {
+    text-align: center;
+    margin-top: 15px;
+    padding: 10px;
+    border-left: 5px solid #007bff;
+    background-color: #f0f8ff;
+}
+
+/* Media Query para Responsividad en móviles */
+@media (max-width: 600px) {
+    /* Las tablas no se colapsan bien, usamos un contenedor de scroll */
+    .table-container {
+        overflow-x: auto;
+    }
+
+    table {
+        min-width: 600px; /* Asegura que la tabla tenga ancho para hacer scroll */
+    }
+
+    h1 {
+        font-size: 1.5em;
+    }
+}
